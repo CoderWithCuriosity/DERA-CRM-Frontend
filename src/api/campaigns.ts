@@ -1,5 +1,5 @@
 import { api } from './client';
-import type { Campaign, CampaignFilters, CreateCampaignData, UpdateCampaignData, CampaignAnalytics, CampaignsResponse, TestEmailData } from '../types/campaign';
+import type { Campaign, CampaignFilters, CreateCampaignData, UpdateCampaignData, CampaignAnalytics, CampaignsResponse, TestEmailData, CampaignDetailResponse } from '../types/campaign';
 import type { EmailTemplate, CreateTemplateData, UpdateTemplateData } from '../types/emailTemplate';
 
 export const campaignsApi = {
@@ -8,7 +8,7 @@ export const campaignsApi = {
     api.get<CampaignsResponse>('/campaigns', { params: filters }),
 
   getCampaignById: (id: number) => 
-    api.get<{ data: Campaign }>(`/campaigns/${id}`),
+    api.get<{ campaign: CampaignDetailResponse['data']['campaign'] }>(`/campaigns/${id}`),
 
   createCampaign: (data: CreateCampaignData) => 
     api.post<{ data: { campaign: Campaign } }>('/campaigns', data),

@@ -1,1 +1,140 @@
 @import "tailwindcss";
+
+
+@theme {
+  --color-primary: #0066FF;
+  --color-primary-50: #F0F4FF;
+  --color-primary-100: #D9E6FF;
+  --color-primary-200: #B3CCFF;
+  --color-primary-300: #8DB3FF;
+  --color-primary-400: #6699FF;
+  --color-primary-500: #0066FF;
+  --color-primary-600: #0052CC;
+  --color-primary-700: #003D99;
+  --color-primary-800: #002966;
+  --color-primary-900: #001433;
+
+  --color-accent: #00D1FF;
+  --color-accent-50: #E6F9FF;
+  --color-accent-100: #CCF3FF;
+  --color-accent-200: #99E7FF;
+  --color-accent-300: #66DBFF;
+  --color-accent-400: #33CFFF;
+  --color-accent-500: #00D1FF;
+  --color-accent-600: #00A7CC;
+  --color-accent-700: #007D99;
+  --color-accent-800: #005466;
+  --color-accent-900: #002A33;
+
+  --color-deep-ink: #001A40;
+  --color-surface-light: #F0F4FF;
+  --color-surface-glass: rgba(255, 255, 255, 0.7);
+  
+  /* Border color for the border-border utility */
+  --color-border: #e5e7eb;
+
+  /* Font family */
+  --font-sans: 'Inter Variable', 'Geist Sans', system-ui, sans-serif;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-surface-light text-deep-ink antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-blue-50;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-primary-300 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary-400;
+  }
+}
+
+@layer components {
+  .glass-effect {
+    @apply bg-white/70 backdrop-blur-md border border-blue-100/50;
+  }
+
+  .hover-lift {
+    @apply transition-transform duration-200 hover:-translate-y-1;
+  }
+
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent;
+  }
+
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-lg hover:shadow-blue-200/40;
+  }
+
+  .animate-in {
+    animation: animateIn 0.3s ease-out;
+  }
+
+  @keyframes animateIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* Loading animation */
+.loading-dots {
+  display: inline-flex;
+  align-items: center;
+}
+
+.loading-dots span {
+  animation: loading-dots 1.4s infinite;
+  animation-fill-mode: both;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  @apply bg-primary;
+  display: inline-block;
+  margin: 0 2px;
+}
+
+.loading-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.loading-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes loading-dots {
+  0% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+  100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+}

@@ -1,12 +1,12 @@
 import { api } from './client';
-import type { Ticket, TicketFilters, CreateTicketData, UpdateTicketData, TicketComment, CreateCommentData, TicketsResponse, SLAResponse } from '../types/ticket';
+import type { Ticket, TicketFilters, CreateTicketData, UpdateTicketData, TicketComment, CreateCommentData, TicketsResponse, SLAResponse, TicketDetailResponse } from '../types/ticket';
 
 export const ticketsApi = {
   getTickets: (filters?: TicketFilters) => 
     api.get<TicketsResponse>('/tickets', { params: filters }),
 
   getTicketById: (id: number) => 
-    api.get<{ data: Ticket }>(`/tickets/${id}`),
+    api.get<{ ticket: TicketDetailResponse['data']['ticket'] }>(`/tickets/${id}`),
 
   createTicket: (data: CreateTicketData) => 
     api.post<{ data: { ticket: Ticket } }>('/tickets', data),

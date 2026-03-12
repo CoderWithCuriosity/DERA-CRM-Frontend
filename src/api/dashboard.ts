@@ -1,12 +1,12 @@
 import { api } from './client';
-import type { DashboardData, SalesChartData, PipelineChartData, RawTicketChartData } from '../types/dashboard';
+import type { DashboardData, PipelineChartData, RawTicketChartData, RawSalesChartData } from '../types/dashboard';
 
 export const dashboardApi = {
   getDashboard: (userId?: number) => 
     api.get<{ data: DashboardData }>('/dashboard', { params: { user_id: userId } }),
 
   getSalesChart: (period: 'month' | 'quarter' | 'year' = 'month', year?: number) => 
-    api.get<{ data: SalesChartData }>('/dashboard/sales-chart', {
+    api.get<{ data: RawSalesChartData }>('/dashboard/sales-chart', {
       params: { period, year },
     }),
 

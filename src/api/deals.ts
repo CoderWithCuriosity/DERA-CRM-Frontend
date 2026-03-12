@@ -1,12 +1,12 @@
 import { api } from './client';
-import type { Deal, DealFilters, CreateDealData, UpdateDealData, PipelineSummary, KanbanBoard, DealsResponse } from '../types/deal';
+import type { Deal, DealFilters, CreateDealData, UpdateDealData, PipelineSummary, KanbanBoard, DealsResponse, DealDetailResponse } from '../types/deal';
 
 export const dealsApi = {
   getDeals: (filters?: DealFilters) => 
     api.get<DealsResponse>('/deals', { params: filters }),
 
   getDealById: (id: number) => 
-    api.get<{ data: Deal }>(`/deals/${id}`),
+    api.get<{ deal: DealDetailResponse['data']['deal'] }>(`/deals/${id}`),
 
   createDeal: (data: CreateDealData) => 
     api.post<{ data: { deal: Deal } }>('/deals', data),
