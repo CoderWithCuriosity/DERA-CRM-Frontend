@@ -1,4 +1,4 @@
-import type { PaginatedResponse, ImportResponse, ExportResponse, ImportStatusResponse } from './api';
+import type { ImportResponse, ExportResponse, ImportStatusResponse } from './api';
 
 export interface Contact {
   id: number;
@@ -23,6 +23,12 @@ export interface Contact {
     first_name: string;
     last_name: string;
   };
+  avatar?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+  deals?: any[];
+  tickets?: any[];
+  activities?: any[];
 }
 
 export interface ContactFilters {
@@ -97,6 +103,25 @@ export interface TagResponse {
       name: string;
       count: number;
     }>;
+  };
+}
+
+export interface PaginatedResponse<T> {
+  success: boolean;
+  data: {
+    data: T[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      pages: number;
+      hasNext: boolean;
+      hasPrev: boolean;
+    };
+    filters?: {
+      statuses?: string[];
+      tags?: string[];
+    };
   };
 }
 

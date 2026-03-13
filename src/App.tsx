@@ -7,6 +7,7 @@ import ResetPassword from './pages/auth/ResetPassword';
 import { Dashboard } from './pages/dashboard/Dashboard';
 import { Contacts } from './pages/contacts/Contacts';
 import ContactDetail from './pages/contacts/ContactDetail';
+import { EditContact } from './pages/contacts/EditContact'; 
 import Deals from './pages/deals/Deals';
 import DealDetail from './pages/deals/DealDetail';
 import Tickets from './pages/tickets/Tickets';
@@ -55,6 +56,7 @@ function App() {
             <Route index element={<Contacts />} />
             <Route path=":id" element={<ContactDetail />} />
             <Route path="new" element={<CreateContact />} />
+            <Route path=":id/edit" element={<EditContact />} />
           </Route>
 
           {/* Deals */}

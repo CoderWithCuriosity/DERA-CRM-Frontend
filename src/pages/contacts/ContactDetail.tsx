@@ -5,7 +5,7 @@ import { GlassCard } from '../../components/ui/GlassCard';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { contactsApi } from '../../api/contacts';
-import type { ContactDetailResponse } from '../../types/contact';
+import type { Contact } from '../../types/contact';
 import { formatDate, formatPhone } from '../../utils/formatters';
 import { useToast } from '../../hooks/useToast';
 
@@ -13,7 +13,10 @@ export default function ContactDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const toast = useToast();
-  const [contact, setContact] = useState<ContactDetailResponse['data']['contact'] | null>(null);
+  const [contact, setContact] = useState<Contact | null>(null);
+  const [deals, setDeals] = useState<any[]>([]);
+  const [tickets, setTickets] = useState<any[]>([]);
+  const [activities, setActivities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'details' | 'deals' | 'tickets' | 'activities'>('details');
 
@@ -23,25 +26,40 @@ export default function ContactDetail() {
     }
   }, [id]);
 
-  const fetchContact = async () => {
-    try {
-      const response = await contactsApi.getContactById(Number(id));
-      setContact(response.data);
-    } catch (error) {
-      toast.error('Failed to load contact');
+const fetchContact = async () => {
+  try {
+    setLoading(true);
+    const response = await contactsApi.getContactById(Number(id));
+    console.log('Contact detail response:', response.data);
+    
+    if (response?.success && response?.data?.contact) {
+      const contactData = response?.data.contact;
+      setContact(contactData);
+      setDeals(contactData.deals || []);
+      setTickets(contactData.tickets || []);
+      setActivities(contactData.activities || []);
+    } else {
+      console.error('Unexpected response structure:', response.data);
+      toast.error('Invalid response format');
       navigate('/contacts');
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (error) {
+    console.error('Failed to load contact:', error);
+    toast.error('Failed to load contact');
+    navigate('/contacts');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleDelete = async () => {
     if (!window.confirm('Are you sure you want to delete this contact?')) return;
     try {
       await contactsApi.deleteContact(Number(id));
-      toast.success('Contact deleted');
+      toast.success('Contact deleted successfully');
       navigate('/contacts');
     } catch (error) {
+      console.error('Failed to delete contact:', error);
       toast.error('Failed to delete contact');
     }
   };
@@ -54,7 +72,16 @@ export default function ContactDetail() {
     );
   }
 
-  if (!contact) return null;
+  if (!contact) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-500">Contact not found</p>
+        <Button variant="primary" onClick={() => navigate('/contacts')} className="mt-4">
+          Back to Contacts
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -71,16 +98,20 @@ export default function ContactDetail() {
         <div className="flex items-start justify-between">
           <div className="flex items-center space-x-4">
             <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white text-2xl font-bold">
-              {contact.first_name[0]}{contact.last_name[0]}
+              {contact.first_name?.[0] || ''}{contact.last_name?.[0] || ''}
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-deep-ink">{contact.first_name} {contact.last_name}</h2>
-              <p className="text-gray-600">{contact.job_title} {contact.company && `at ${contact.company}`}</p>
+              <h2 className="text-2xl font-bold text-deep-ink">
+                {contact.first_name} {contact.last_name}
+              </h2>
+              <p className="text-gray-600">
+                {contact.job_title} {contact.company && `at ${contact.company}`}
+              </p>
               <div className="flex items-center space-x-2 mt-2">
                 <Badge variant={contact.status === 'active' ? 'success' : contact.status === 'lead' ? 'info' : 'default'}>
                   {contact.status}
                 </Badge>
-                {contact.tags.map(tag => (
+                {contact.tags?.map(tag => (
                   <Badge key={tag} variant="primary" size="sm">{tag}</Badge>
                 ))}
               </div>
@@ -127,7 +158,7 @@ export default function ContactDetail() {
             </div>
             {contact.notes && (
               <div className="flex items-start text-gray-600">
-                <div className="mr-3 mt-1">📝</div>
+                <span className="mr-3 text-primary">📝</span>
                 <p className="text-sm">{contact.notes}</p>
               </div>
             )}
@@ -148,7 +179,11 @@ export default function ContactDetail() {
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              {tab}
+              {tab} {tab !== 'details' && (
+                <span className="ml-2 text-xs bg-gray-100 px-2 py-1 rounded-full">
+                  {tab === 'deals' ? deals.length : tab === 'tickets' ? tickets.length : activities.length}
+                </span>
+              )}
             </button>
           ))}
         </nav>
@@ -159,55 +194,87 @@ export default function ContactDetail() {
         {activeTab === 'details' && (
           <div className="space-y-4">
             <h3 className="font-medium text-deep-ink">Additional Information</h3>
-            <p className="text-gray-600">Source: {contact.source || 'Unknown'}</p>
-            {/* More fields as needed */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-500">Source</p>
+                <p className="text-gray-800">{contact.source || 'Unknown'}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">User ID</p>
+                <p className="text-gray-800">{contact.user_id}</p>
+              </div>
+              {contact.created_by && (
+                <div>
+                  <p className="text-sm text-gray-500">Created By</p>
+                  <p className="text-gray-800">
+                    {contact.created_by.first_name} {contact.created_by.last_name}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         )}
         {activeTab === 'deals' && (
           <div>
-            {contact.deals?.length ? (
+            {deals.length > 0 ? (
               <div className="space-y-3">
-                {contact.deals.map(deal => (
-                  <div key={deal.id} className="p-3 bg-white/50 rounded-lg flex justify-between">
-                    <span>{deal.name}</span>
-                    <Badge>{deal.stage}</Badge>
+                {deals.map(deal => (
+                  <div key={deal.id} className="p-3 bg-white/50 rounded-lg flex justify-between items-center">
+                    <div>
+                      <p className="font-medium">{deal.name}</p>
+                      <p className="text-sm text-gray-500">Amount: ${deal.amount?.toLocaleString()}</p>
+                    </div>
+                    <Badge variant={deal.stage === 'won' ? 'success' : deal.stage === 'lost' ? 'danger' : 'default'}>
+                      {deal.stage}
+                    </Badge>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500">No deals associated.</p>
+              <p className="text-gray-500 text-center py-8">No deals associated with this contact.</p>
             )}
           </div>
         )}
         {activeTab === 'tickets' && (
           <div>
-            {contact.tickets?.length ? (
+            {tickets.length > 0 ? (
               <div className="space-y-3">
-                {contact.tickets.map(ticket => (
-                  <div key={ticket.id} className="p-3 bg-white/50 rounded-lg flex justify-between">
-                    <span>{ticket.subject}</span>
-                    <Badge variant={ticket.status === 'open' ? 'warning' : 'default'}>{ticket.status}</Badge>
+                {tickets.map(ticket => (
+                  <div key={ticket.id} className="p-3 bg-white/50 rounded-lg flex justify-between items-center">
+                    <div>
+                      <p className="font-medium">{ticket.subject}</p>
+                      <p className="text-sm text-gray-500">Priority: {ticket.priority}</p>
+                    </div>
+                    <Badge variant={ticket.status === 'open' ? 'warning' : ticket.status === 'closed' ? 'success' : 'default'}>
+                      {ticket.status}
+                    </Badge>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500">No tickets.</p>
+              <p className="text-gray-500 text-center py-8">No tickets associated with this contact.</p>
             )}
           </div>
         )}
         {activeTab === 'activities' && (
           <div>
-            {contact.activities?.length ? (
+            {activities.length > 0 ? (
               <div className="space-y-3">
-                {contact.activities.map(activity => (
-                  <div key={activity.id} className="p-3 bg-white/50 rounded-lg flex justify-between">
-                    <span>{activity.subject}</span>
-                    <span className="text-sm text-gray-500">{formatDate(activity.scheduled_date)}</span>
+                {activities.map(activity => (
+                  <div key={activity.id} className="p-3 bg-white/50 rounded-lg">
+                    <div className="flex justify-between items-center">
+                      <p className="font-medium">{activity.subject}</p>
+                      <span className="text-sm text-gray-500">{formatDate(activity.scheduled_date)}</span>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">Type: {activity.type}</p>
+                    <Badge variant={activity.status === 'completed' ? 'success' : 'default'} size="sm" className="mt-2">
+                      {activity.status}
+                    </Badge>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500">No recent activities.</p>
+              <p className="text-gray-500 text-center py-8">No recent activities.</p>
             )}
           </div>
         )}

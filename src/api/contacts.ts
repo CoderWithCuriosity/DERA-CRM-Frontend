@@ -6,7 +6,7 @@ export const contactsApi = {
     api.get<ContactsResponse>('/contacts', { params: filters }),
 
   getContactById: (id: number) => 
-    api.get<{ data: ContactDetailResponse }>(`/contacts/${id}`),
+    api.get<ContactDetailResponse>(`/contacts/${id}`),
 
   createContact: (data: CreateContactData) => 
     api.post<{ data: { contact: Contact } }>('/contacts', data),

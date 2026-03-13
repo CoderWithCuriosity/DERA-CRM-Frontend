@@ -19,6 +19,10 @@ export function Contacts() {
   const [selectedTag, setSelectedTag] = useState<string>('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [availableFilters, setAvailableFilters] = useState<{
+    statuses?: string[];
+    tags?: string[];
+  }>({});
   const [tags, setTags] = useState<Array<{ name: string; count: number }>>([]);
   const navigate = useNavigate(); 
 
@@ -34,9 +38,16 @@ export function Contacts() {
         status: selectedStatus || undefined,
         tag: selectedTag || undefined,
       });
-      console.log(response.data);
-      setContacts(response.data.items || []);
-      setTotalPages(response.data.totalPages || 1);
+      
+      // Access the nested data structure correctly
+      // response.data.data contains the contacts array
+      // response.data.pagination contains pagination info
+      // response.data.filters contains available filters
+      console.log('API Response:', response.data);
+      
+      setContacts(response.data.data || []);
+      setTotalPages(response.data.pagination?.pages || 1);
+      setAvailableFilters(response.data.filters || {});
     } catch (error) {
       console.error('Failed to fetch contacts:', error);
       setContacts([]);
@@ -74,6 +85,14 @@ export function Contacts() {
       console.error('Failed to export contacts:', error);
     }
   };
+
+  // Optional: Use the filters from the API response to populate dropdowns
+  useEffect(() => {
+    if (availableFilters.statuses) {
+      // You could use this to dynamically populate status options
+      console.log('Available statuses:', availableFilters.statuses);
+    }
+  }, [availableFilters]);
 
   return (
     <div className="space-y-6">
@@ -120,6 +139,7 @@ export function Contacts() {
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
               <option value="lead">Lead</option>
+              {/* You could also use availableFilters.statuses here if you want dynamic options */}
             </select>
             <select
               value={selectedTag}
@@ -175,18 +195,19 @@ export function Contacts() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
-                    className="border-b border-blue-50 hover:bg-blue-50/30 transition-colors group"
+                    className="border-b border-blue-50 hover:bg-blue-50/30 transition-colors group cursor-pointer"
+                    onClick={() => navigate(`/contacts/${contact.id}`)}
                   >
                     <td className="p-4">
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center text-white font-medium text-sm">
-                          {contact.first_name[0]}{contact.last_name[0]}
+                          {contact.first_name?.[0]}{contact.last_name?.[0]}
                         </div>
                         <div>
                           <p className="font-medium text-deep-ink">
                             {contact.first_name} {contact.last_name}
                           </p>
-                          <p className="text-sm text-gray-500">{contact.job_title}</p>
+                          <p className="text-sm text-gray-500">{contact.job_title || '-'}</p>
                         </div>
                       </div>
                     </td>
@@ -208,12 +229,12 @@ export function Contacts() {
                     </td>
                     <td className="p-4">
                       <div className="flex flex-wrap gap-1">
-                        {contact.tags.slice(0, 2).map((tag) => (
+                        {contact.tags?.slice(0, 2).map((tag) => (
                           <Badge key={tag} variant="primary" size="sm">
                             {tag}
                           </Badge>
                         ))}
-                        {contact.tags.length > 2 && (
+                        {contact.tags?.length > 2 && (
                           <Badge variant="default" size="sm">
                             +{contact.tags.length - 2}
                           </Badge>
@@ -226,7 +247,13 @@ export function Contacts() {
                       </p>
                     </td>
                     <td className="p-4 text-right">
-                      <button className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button 
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent row click when clicking actions
+                          // Handle actions menu
+                        }}
+                      >
                         <MoreVertical size={18} className="text-gray-400 hover:text-gray-600" />
                       </button>
                     </td>
