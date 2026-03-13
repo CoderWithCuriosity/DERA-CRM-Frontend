@@ -24,6 +24,7 @@ import Backups from './pages/admin/Backups';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import AdminRoute from './components/auth/AdminRoute';
 import { useAuth } from './hooks/useAuth';
+import { CreateContact } from './pages/contacts/CreateContact';
 
 function App() {
   const { isAuthenticated } = useAuth();
@@ -53,6 +54,7 @@ function App() {
           <Route path="contacts">
             <Route index element={<Contacts />} />
             <Route path=":id" element={<ContactDetail />} />
+            <Route path="new" element={<CreateContact />} />
           </Route>
 
           {/* Deals */}

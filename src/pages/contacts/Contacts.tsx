@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Search, Filter, Download, Upload, MoreVertical } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
@@ -9,6 +9,7 @@ import { contactsApi } from '../../api/contacts';
 import type { Contact } from '../../types/contact';
 import { useDebounce } from '../../hooks/useDebounce';
 import { formatDate } from '../../utils/formatters';
+import { useNavigate } from "react-router-dom";
 
 export function Contacts() {
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -19,22 +20,26 @@ export function Contacts() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [tags, setTags] = useState<Array<{ name: string; count: number }>>([]);
-  
+  const navigate = useNavigate(); 
+
   const debouncedSearch = useDebounce(search, 500);
 
   const fetchContacts = async () => {
     try {
+      setLoading(true);
       const response = await contactsApi.getContacts({
         page,
         limit: 20,
         search: debouncedSearch,
-        status: selectedStatus,
-        tag: selectedTag,
+        status: selectedStatus || undefined,
+        tag: selectedTag || undefined,
       });
-      setContacts(response.data.items);
-      setTotalPages(response.data.totalPages);
+      console.log(response.data);
+      setContacts(response.data.items || []);
+      setTotalPages(response.data.totalPages || 1);
     } catch (error) {
       console.error('Failed to fetch contacts:', error);
+      setContacts([]);
     } finally {
       setLoading(false);
     }
@@ -87,7 +92,7 @@ export function Contacts() {
             <Upload size={18} className="mr-2" />
             Import
           </Button>
-          <Button>
+          <Button onClick={() => navigate('/contacts/new')}>
             <Plus size={18} className="mr-2" />
             Add Contact
           </Button>
@@ -174,7 +179,7 @@ export function Contacts() {
                   >
                     <td className="p-4">
                       <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-white font-medium text-sm">
+                        <div className="w-8 h-8 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center text-white font-medium text-sm">
                           {contact.first_name[0]}{contact.last_name[0]}
                         </div>
                         <div>

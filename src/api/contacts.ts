@@ -1,12 +1,12 @@
 import { api } from './client';
-import type { Contact, ContactFilters, CreateContactData, UpdateContactData, ContactsResponse, ContactImportResponse, ContactExportResponse } from '../types/contact.ts';
+import type { Contact, ContactFilters, CreateContactData, UpdateContactData, ContactsResponse, ContactImportResponse, ContactExportResponse, ContactDetailResponse } from '../types/contact.ts';
 
 export const contactsApi = {
   getContacts: (filters?: ContactFilters) => 
     api.get<ContactsResponse>('/contacts', { params: filters }),
 
   getContactById: (id: number) => 
-    api.get<{ data: Contact }>(`/contacts/${id}`),
+    api.get<{ data: ContactDetailResponse }>(`/contacts/${id}`),
 
   createContact: (data: CreateContactData) => 
     api.post<{ data: { contact: Contact } }>('/contacts', data),
