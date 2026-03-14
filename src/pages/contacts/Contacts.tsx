@@ -1,15 +1,31 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Search, Filter, Download, Upload, MoreVertical } from 'lucide-react';
+import {
+  Plus, Search, Filter, Download, Upload, MoreVertical,
+  X, CheckCircle, AlertCircle, Loader, FileSpreadsheet
+} from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { GlassCard } from '../../components/ui/GlassCard';
 import { Badge } from '../../components/ui/Badge';
+import { Modal } from '../../components/ui/Modal';
 import { contactsApi } from '../../api/contacts';
 import type { Contact } from '../../types/contact';
 import { useDebounce } from '../../hooks/useDebounce';
 import { formatDate } from '../../utils/formatters';
 import { useNavigate } from "react-router-dom";
+
+// Import Status Types
+type ImportStatus = {
+  import_id: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  total?: number;
+  processed?: number;
+  successful?: number;
+  failed?: number;
+  errors?: Array<{ row: number; error: string }>;
+  completed_at?: string;
+};
 
 export function Contacts() {
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -19,15 +35,19 @@ export function Contacts() {
   const [selectedTag, setSelectedTag] = useState<string>('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [availableFilters, setAvailableFilters] = useState<{
-    statuses?: string[];
-    tags?: string[];
-  }>({});
   const [tags, setTags] = useState<Array<{ name: string; count: number }>>([]);
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
+
+  // Import/Export States
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importStatus, setImportStatus] = useState<ImportStatus | null>(null);
+  const [importLoading, setImportLoading] = useState(false);
+  const [pollingInterval, setPollingInterval] = useState<ReturnType<typeof setTimeout> | null>(null);
 
   const debouncedSearch = useDebounce(search, 500);
 
+  // Fetch contacts
   const fetchContacts = async () => {
     try {
       setLoading(true);
@@ -38,16 +58,9 @@ export function Contacts() {
         status: selectedStatus || undefined,
         tag: selectedTag || undefined,
       });
-      
-      // Access the nested data structure correctly
-      // response.data.data contains the contacts array
-      // response.data.pagination contains pagination info
-      // response.data.filters contains available filters
-      console.log('API Response:', response.data);
-      
-      setContacts(response.data.data || []);
-      setTotalPages(response.data.pagination?.pages || 1);
-      setAvailableFilters(response.data.filters || {});
+
+      setContacts(response.data?.data || []);
+      setTotalPages(response.data?.pagination?.pages || 1);
     } catch (error) {
       console.error('Failed to fetch contacts:', error);
       setContacts([]);
@@ -56,10 +69,11 @@ export function Contacts() {
     }
   };
 
+  // Fetch tags
   const fetchTags = async () => {
     try {
       const response = await contactsApi.getAllTags();
-      setTags(response.data.tags);
+      setTags(response.data?.tags || []);
     } catch (error) {
       console.error('Failed to fetch tags:', error);
     }
@@ -73,26 +87,203 @@ export function Contacts() {
     fetchTags();
   }, []);
 
-  const handleExport = async () => {
+  // Cleanup polling on unmount
+  useEffect(() => {
+    return () => {
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+      }
+    };
+  }, [pollingInterval]);
+
+  // Handle export
+  const handleExport = async (format: 'csv' | 'excel' = 'csv') => {
     try {
-      const response = await contactsApi.exportContacts('csv', {
+      setLoading(true);
+      const response = await contactsApi.exportContacts(format, {
         search: debouncedSearch,
         status: selectedStatus,
         tag: selectedTag,
       });
-      window.open(response.data.download_url, '_blank');
+
+      // Open the download URL
+      if (response.data?.download_url) {
+        window.open(response.data.download_url, '_blank');
+      }
     } catch (error) {
       console.error('Failed to export contacts:', error);
+      alert('Failed to export contacts. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Optional: Use the filters from the API response to populate dropdowns
-  useEffect(() => {
-    if (availableFilters.statuses) {
-      // You could use this to dynamically populate status options
-      console.log('Available statuses:', availableFilters.statuses);
+  // Handle file selection for import
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      const validTypes = ['text/csv', 'application/vnd.ms-excel'];
+      if (!validTypes.includes(file.type) && !file.name.endsWith('.csv')) {
+        alert('Please select a valid CSV file');
+        return;
+      }
+
+      // Validate file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        alert('File size must be less than 10MB');
+        return;
+      }
+
+      setImportFile(file);
+      setImportStatus(null);
     }
-  }, [availableFilters]);
+  };
+
+  // Start import
+  const handleImport = async () => {
+    if (!importFile) return;
+
+    try {
+      setImportLoading(true);
+      setImportStatus({
+        import_id: '',
+        status: 'pending',
+      });
+
+      const response = await contactsApi.importContacts(importFile);
+
+      if (response.data?.import_id) {
+        const importId = response.data.import_id;
+
+        // Set initial processing status
+        setImportStatus({
+          import_id: importId,
+          status: 'processing',
+          total: 0,
+          processed: 0,
+          successful: 0,
+          failed: 0,
+          errors: []
+        });
+
+        // Clear any existing interval first
+        if (pollingInterval) {
+          clearInterval(pollingInterval);
+          setPollingInterval(null);
+        }
+
+        // Start polling for status
+        const interval = setInterval(async () => {
+          try {
+            const statusResponse = await contactsApi.getImportStatus(importId);
+            const status = statusResponse.data?.data || statusResponse.data;
+
+            // Update the status
+            setImportStatus({
+              import_id: importId,
+              status: status.status,
+              total: status.total || 0,
+              processed: status.processed || 0,
+              successful: status.successful || 0,
+              failed: status.failed || 0,
+              errors: status.errors || [],
+              completed_at: status.completed_at,
+            });
+
+            // Stop polling if completed or failed
+            if (status.status === 'completed' || status.status === 'failed') {
+              clearInterval(interval);
+              setPollingInterval(null);
+
+              if (status.status === 'completed') {
+                // Refresh contacts list
+                await fetchContacts();
+              }
+            }
+          } catch (error) {
+            console.error('Failed to get import status:', error);
+            // Stop polling on error
+            clearInterval(interval);
+            setPollingInterval(null);
+          }
+        }, 2000); // Poll every 2 seconds
+
+        setPollingInterval(interval);
+      }
+    } catch (error) {
+      console.error('Failed to import contacts:', error);
+      setImportStatus({
+        import_id: '',
+        status: 'failed',
+        total: 0,
+        processed: 0,
+        successful: 0,
+        failed: 0,
+        errors: [{ row: 0, error: 'Import failed to start' }],
+      });
+    } finally {
+      setImportLoading(false);
+    }
+  };
+
+  // Also update the cleanup in handleCloseImportModal to be more robust
+  const handleCloseImportModal = () => {
+    setShowImportModal(false);
+    setImportFile(null);
+    setImportStatus(null);
+
+    // Clear polling interval
+    if (pollingInterval) {
+      clearInterval(pollingInterval);
+      setPollingInterval(null);
+    }
+  };
+
+  // Add a ref to track if component is mounted
+  useEffect(() => {
+    let isMounted = true;
+
+    // Your existing code...
+
+    return () => {
+      isMounted = false;
+      // Cleanup polling on unmount
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+        setPollingInterval(null);
+      }
+    };
+  }, [pollingInterval]);
+
+  // Add an effect to watch for showImportModal changes
+  useEffect(() => {
+    // If modal is closed, stop polling
+    if (!showImportModal && pollingInterval) {
+      clearInterval(pollingInterval);
+      setPollingInterval(null);
+    }
+  }, [showImportModal, pollingInterval]);
+
+
+  // Download sample CSV
+  const handleDownloadSample = () => {
+    const headers = ['first_name', 'last_name', 'email', 'phone', 'company', 'job_title', 'status', 'tags'];
+    const sampleRow = ['John', 'Doe', 'john@example.com', '+1234567890', 'Acme Inc', 'Manager', 'active', 'customer;vip'];
+
+    const csvContent = [
+      headers.join(','),
+      sampleRow.join(',')
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'sample-contacts.csv';
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="space-y-6">
@@ -103,14 +294,35 @@ export function Contacts() {
           <p className="text-gray-600 mt-1">Manage your contacts and leads</p>
         </div>
         <div className="flex items-center space-x-3">
-          <Button variant="outline" onClick={handleExport}>
-            <Download size={18} className="mr-2" />
-            Export
-          </Button>
-          <Button>
+          {/* Export Dropdown */}
+          <div className="relative group">
+            <Button variant="outline">
+              <Download size={18} className="mr-2" />
+              Export
+            </Button>
+            <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-blue-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
+              <button
+                onClick={() => handleExport('csv')}
+                className="w-full text-left px-4 py-2 hover:bg-blue-50 first:rounded-t-xl"
+              >
+                Export as CSV
+              </button>
+              <button
+                onClick={() => handleExport('excel')}
+                className="w-full text-left px-4 py-2 hover:bg-blue-50 last:rounded-b-xl"
+              >
+                Export as Excel
+              </button>
+            </div>
+          </div>
+
+          {/* Import Button */}
+          <Button variant="outline" onClick={() => setShowImportModal(true)}>
             <Upload size={18} className="mr-2" />
             Import
           </Button>
+
+          {/* Add Contact Button */}
           <Button onClick={() => navigate('/contacts/new')}>
             <Plus size={18} className="mr-2" />
             Add Contact
@@ -139,7 +351,6 @@ export function Contacts() {
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
               <option value="lead">Lead</option>
-              {/* You could also use availableFilters.statuses here if you want dynamic options */}
             </select>
             <select
               value={selectedTag}
@@ -247,10 +458,10 @@ export function Contacts() {
                       </p>
                     </td>
                     <td className="p-4 text-right">
-                      <button 
+                      <button
                         className="opacity-0 group-hover:opacity-100 transition-opacity"
                         onClick={(e) => {
-                          e.stopPropagation(); // Prevent row click when clicking actions
+                          e.stopPropagation();
                           // Handle actions menu
                         }}
                       >
@@ -291,6 +502,139 @@ export function Contacts() {
           </div>
         )}
       </GlassCard>
+
+      {/* Import Modal */}
+      <Modal isOpen={showImportModal} onClose={handleCloseImportModal} maxWidth="md">
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-deep-ink">Import Contacts</h2>
+            <button onClick={handleCloseImportModal}>
+              <X size={20} className="text-gray-500 hover:text-gray-700" />
+            </button>
+          </div>
+
+          {!importStatus || importStatus.status === 'pending' ? (
+            // File Upload
+            <div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select CSV File
+                </label>
+                <input
+                  type="file"
+                  accept=".csv"
+                  onChange={handleFileSelect}
+                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary-dark"
+                />
+                <p className="text-xs text-gray-500 mt-2">
+                  Maximum file size: 10MB. CSV format only.
+                </p>
+              </div>
+
+              <div className="mb-6">
+                <button
+                  onClick={handleDownloadSample}
+                  className="text-primary hover:text-primary-dark text-sm flex items-center"
+                >
+                  <FileSpreadsheet size={16} className="mr-1" />
+                  Download sample CSV
+                </button>
+              </div>
+
+              <div className="flex justify-end space-x-3">
+                <Button variant="outline" onClick={handleCloseImportModal}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleImport}
+                  disabled={!importFile || importLoading}
+                >
+                  {importLoading ? (
+                    <>
+                      <Loader size={18} className="mr-2 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    'Import'
+                  )}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            // Import Status
+            <div>
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-700">Status</span>
+                  <Badge
+                    variant={
+                      importStatus.status === 'completed' ? 'success' :
+                        importStatus.status === 'failed' ? 'danger' :
+                          importStatus.status === 'processing' ? 'info' : 'default'
+                    }
+                  >
+                    {importStatus.status.charAt(0).toUpperCase() + importStatus.status.slice(1)}
+                  </Badge>
+                </div>
+
+                {(importStatus.status === 'processing' || importStatus.status === 'completed') && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">Progress</span>
+                      <span className="font-medium">
+                        {importStatus.processed || 0} / {importStatus.total || 0}
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-primary rounded-full h-2 transition-all duration-300"
+                        style={{
+                          width: `${((importStatus.processed || 0) / (importStatus.total || 1)) * 100}%`
+                        }}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 mt-4">
+                      <div className="text-center">
+                        <CheckCircle size={24} className="mx-auto text-green-500 mb-1" />
+                        <span className="text-sm text-gray-600">Successful</span>
+                        <p className="text-lg font-bold text-green-600">{importStatus.successful || 0}</p>
+                      </div>
+                      <div className="text-center">
+                        <AlertCircle size={24} className="mx-auto text-red-500 mb-1" />
+                        <span className="text-sm text-gray-600">Failed</span>
+                        <p className="text-lg font-bold text-red-600">{importStatus.failed || 0}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {importStatus.errors && importStatus.errors.length > 0 && (
+                  <div className="mt-4">
+                    <h3 className="text-sm font-medium text-gray-700 mb-2">Errors</h3>
+                    <div className="max-h-40 overflow-y-auto bg-red-50 rounded-lg p-3">
+                      {importStatus.errors.map((error, index) => (
+                        <p key={index} className="text-xs text-red-600 mb-1">
+                          Row {error.row}: {error.error}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end">
+                <Button
+                  onClick={handleCloseImportModal}
+                  disabled={importStatus.status === 'processing'}
+                >
+                  {importStatus.status === 'completed' ? 'Done' : 'Close'}
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </Modal>
     </div>
   );
 }

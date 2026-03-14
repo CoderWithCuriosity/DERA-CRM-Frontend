@@ -1,5 +1,5 @@
 import { api } from './client';
-import type { Contact, ContactFilters, CreateContactData, UpdateContactData, ContactsResponse, ContactImportResponse, ContactExportResponse, ContactDetailResponse } from '../types/contact.ts';
+import type { Contact, ContactFilters, CreateContactData, UpdateContactData, ContactsResponse, ContactImportStatusResponse,ContactImportResponse, ContactExportResponse, ContactDetailResponse, TagResponse } from '../types/contact';
 
 export const contactsApi = {
   getContacts: (filters?: ContactFilters) => 
@@ -17,17 +17,21 @@ export const contactsApi = {
   deleteContact: (id: number) => 
     api.delete(`/contacts/${id}`),
 
-  importContacts: (file: File, columnMapping: Record<string, string>) => {
+  importContacts: (file: File, columnMapping?: Record<string, string>) => {
     const formData = new FormData();
+    console.log("The file: ", file);
     formData.append('file', file);
-    formData.append('column_mapping', JSON.stringify(columnMapping));
+    if (columnMapping) {
+      formData.append('column_mapping', JSON.stringify(columnMapping));
+    }
     return api.post<ContactImportResponse>('/contacts/import', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
 
   getImportStatus: (importId: string) => 
-    api.get(`/contacts/import/${importId}/status`),
+    api.get<{ data: ContactImportStatusResponse }>(`/contacts/import/${importId}/status`),
+
 
   exportContacts: (format: 'csv' | 'excel' = 'csv', filters?: ContactFilters) => 
     api.get<{ data: ContactExportResponse }>('/contacts/export', { 
@@ -38,8 +42,8 @@ export const contactsApi = {
     api.post(`/contacts/${id}/tags`, { tag }),
 
   removeTag: (id: number, tag: string) => 
-    api.delete(`/contacts/${id}/tags/${tag}`),
+    api.delete(`/contacts/${id}/tags/${encodeURIComponent(tag)}`),
 
   getAllTags: () => 
-    api.get<{ data: { tags: Array<{ name: string; count: number }> } }>('/contacts/tags/all'),
+    api.get<TagResponse>('/contacts/tags/all'),
 };
