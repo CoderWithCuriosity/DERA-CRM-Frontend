@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, X } from 'lucide-react';
+import { ArrowLeft, Save, X, Camera } from 'lucide-react';
 import { GlassCard } from '../../components/ui/GlassCard';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -29,6 +29,10 @@ export function EditContact() {
     notes: '',
     tags: [],
   });
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [currentAvatar, setCurrentAvatar] = useState<string | null>(null);
+  const [avatarError, setAvatarError] = useState(false); // Add this state
 
   useEffect(() => {
     if (id) {
@@ -36,11 +40,16 @@ export function EditContact() {
     }
   }, [id]);
 
+  // Reset avatar error when currentAvatar changes
+  useEffect(() => {
+    setAvatarError(false);
+  }, [currentAvatar]);
+
   const fetchContact = async () => {
     try {
       setLoading(true);
       const response = await contactsApi.getContactById(Number(id));
-      
+
       if (response?.success && response?.data?.contact) {
         const contact = response.data.contact;
         setFormData({
@@ -55,6 +64,7 @@ export function EditContact() {
           notes: contact.notes || '',
           tags: contact.tags || [],
         });
+        setCurrentAvatar(contact.avatar || null);
       } else {
         toast.error('Contact not found');
         navigate('/contacts');
@@ -66,6 +76,38 @@ export function EditContact() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Add avatar select handler
+  const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        toast.error('Please select a valid image file (JPEG, PNG, GIF, WEBP)');
+        return;
+      }
+
+      // Validate file size (max 2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error('File size must be less than 2MB');
+        return;
+      }
+
+      setAvatarFile(file);
+      setAvatarError(false); // Reset error state when new file is selected
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAvatarError = () => {
+    setAvatarError(true);
+    console.error(`Avatar failed to load for contact ${id}: ${currentAvatar}`);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -92,7 +134,7 @@ export function EditContact() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.first_name || !formData.last_name || !formData.email) {
       toast.error('Please fill in all required fields');
       return;
@@ -101,11 +143,36 @@ export function EditContact() {
     try {
       setSaving(true);
       await contactsApi.updateContact(Number(id), formData);
+
+      // Upload new avatar if selected
+      if (avatarFile) {
+        await contactsApi.uploadAvatar(Number(id), avatarFile);
+      }
+
       toast.success('Contact updated successfully');
       navigate(`/contacts/${id}`);
     } catch (error) {
       console.error('Failed to update contact:', error);
       toast.error('Failed to update contact');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    if (!window.confirm('Are you sure you want to remove this avatar?')) return;
+    
+    try {
+      setSaving(true);
+      await contactsApi.deleteAvatar(Number(id));
+      setCurrentAvatar(null);
+      setAvatarPreview(null);
+      setAvatarFile(null);
+      setAvatarError(false);
+      toast.success('Avatar removed successfully');
+    } catch (error) {
+      console.error('Failed to remove avatar:', error);
+      toast.error('Failed to remove avatar');
     } finally {
       setSaving(false);
     }
@@ -118,6 +185,10 @@ export function EditContact() {
       </div>
     );
   }
+
+  // Determine if we should show the image
+  const shouldShowImage = (avatarPreview || currentAvatar) && !avatarError;
+  const displayInitials = `${formData.first_name?.[0] || ''}${formData.last_name?.[0] || ''}`;
 
   return (
     <div className="space-y-6">
@@ -145,6 +216,66 @@ export function EditContact() {
       <form onSubmit={handleSubmit}>
         <GlassCard className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* avatar section */}
+            <div className="md:col-span-2 flex flex-col items-center py-4">
+              <div className="relative group">
+                <div className="w-24 h-24 rounded-full overflow-hidden bg-linear-to-br from-primary to-accent flex items-center justify-center">
+                  {shouldShowImage ? (
+                    <img
+                      src={avatarPreview || currentAvatar || ''}
+                      alt="Avatar"
+                      className="w-full h-full object-cover"
+                      onError={handleAvatarError}
+                    />
+                  ) : (
+                    <span className="text-white text-2xl font-bold">
+                      {displayInitials}
+                    </span>
+                  )}
+                </div>
+                <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/gif,image/webp"
+                    onChange={handleAvatarSelect}
+                    className="hidden"
+                    id="avatar-upload"
+                    disabled={saving}
+                  />
+                  <label
+                    htmlFor="avatar-upload"
+                    className="cursor-pointer p-2 bg-white rounded-full hover:bg-gray-100 transition-colors"
+                  >
+                    <Camera size={18} className="text-gray-700" />
+                  </label>
+                </div>
+              </div>
+              
+              {/* Avatar actions */}
+              <div className="flex items-center space-x-4 mt-2">
+                <p className="text-xs text-gray-500">
+                  Click to change avatar (max 2MB)
+                </p>
+                {currentAvatar && !avatarPreview && !avatarError && (
+                  <button
+                    type="button"
+                    onClick={handleRemoveAvatar}
+                    className="text-xs text-red-600 hover:text-red-700"
+                    disabled={saving}
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+
+              {/* Error message for broken image */}
+              {avatarError && currentAvatar && !avatarPreview && (
+                <p className="text-xs text-amber-600 mt-2">
+                  Failed to load existing avatar. Upload a new one to replace it.
+                </p>
+              )}
+            </div>
+            
             {/* Basic Information */}
             <div className="space-y-4">
               <div className="flex row items-center space-x-2 pb-2">

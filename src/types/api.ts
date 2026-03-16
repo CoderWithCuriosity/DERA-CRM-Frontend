@@ -41,8 +41,12 @@ export interface ImportResponse {
 }
 
 export interface ExportResponse {
-  download_url: string;
-  expires_at: string;
+  success: boolean;
+  data: {
+    filename: string;
+    url: string;
+    path: string;
+  };
 }
 
 export interface ImportStatusResponse {

@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   Plus, Search, Filter, Download, Upload, MoreVertical,
-  X, CheckCircle, AlertCircle, Loader, FileSpreadsheet
+  X, CheckCircle, AlertCircle, Loader, FileSpreadsheet,
+  Edit, Trash2, Eye, Mail, Phone, Copy
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -14,6 +15,7 @@ import type { Contact } from '../../types/contact';
 import { useDebounce } from '../../hooks/useDebounce';
 import { formatDate } from '../../utils/formatters';
 import { useNavigate } from "react-router-dom";
+import { useToast } from '../../hooks/useToast';
 
 // Import Status Types
 type ImportStatus = {
@@ -36,7 +38,9 @@ export function Contacts() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [tags, setTags] = useState<Array<{ name: string; count: number }>>([]);
+  const [actionMenuContact, setActionMenuContact] = useState<number | null>(null);
   const navigate = useNavigate();
+  const toast = useToast();
 
   // Import/Export States
   const [showImportModal, setShowImportModal] = useState(false);
@@ -44,6 +48,7 @@ export function Contacts() {
   const [importStatus, setImportStatus] = useState<ImportStatus | null>(null);
   const [importLoading, setImportLoading] = useState(false);
   const [pollingInterval, setPollingInterval] = useState<ReturnType<typeof setTimeout> | null>(null);
+  const [deleteConfirmContact, setDeleteConfirmContact] = useState<Contact | null>(null);
 
   const debouncedSearch = useDebounce(search, 500);
 
@@ -87,6 +92,31 @@ export function Contacts() {
     fetchTags();
   }, []);
 
+  // Handle delete contact
+  const handleDeleteContact = async () => {
+    if (!deleteConfirmContact) return;
+
+    try {
+      await contactsApi.deleteContact(deleteConfirmContact.id);
+      toast.success('Contact deleted successfully');
+      fetchContacts(); // Refresh the list
+    } catch (error) {
+      console.error('Failed to delete contact:', error);
+      toast.error('Failed to delete contact');
+    } finally {
+      setDeleteConfirmContact(null);
+    }
+  };
+
+  // Close action menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setActionMenuContact(null);
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+
   // Cleanup polling on unmount
   useEffect(() => {
     return () => {
@@ -97,22 +127,43 @@ export function Contacts() {
   }, [pollingInterval]);
 
   // Handle export
+  // Handle export
   const handleExport = async (format: 'csv' | 'excel' = 'csv') => {
     try {
       setLoading(true);
-      const response = await contactsApi.exportContacts(format, {
-        search: debouncedSearch,
-        status: selectedStatus,
-        tag: selectedTag,
-      });
 
-      // Open the download URL
-      if (response.data?.download_url) {
-        window.open(response.data.download_url, '_blank');
+      // Build filters object, excluding empty values
+      const filters: any = {};
+
+      if (debouncedSearch?.trim()) {
+        filters.search = debouncedSearch.trim();
+      }
+
+      if (selectedStatus?.trim()) {
+        filters.status = selectedStatus.trim();
+      }
+
+      if (selectedTag?.trim()) {
+        filters.tag = selectedTag.trim();
+      }
+
+      const response = await contactsApi.exportContacts(format, filters);
+
+      console.log(response);
+
+      // Check if response has the expected structure
+      if (response?.success && response.data?.url) {
+        // Open the download URL
+        window.open(response.data.url, '_blank');
+
+        // Optional: Show success toast
+        toast.success(`Export started: ${response.data.filename}`);
+      } else {
+        throw new Error('Invalid response format');
       }
     } catch (error) {
       console.error('Failed to export contacts:', error);
-      alert('Failed to export contacts. Please try again.');
+      toast.error('Failed to export contacts. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -227,7 +278,6 @@ export function Contacts() {
     }
   };
 
-  // Also update the cleanup in handleCloseImportModal to be more robust
   const handleCloseImportModal = () => {
     setShowImportModal(false);
     setImportFile(null);
@@ -239,32 +289,6 @@ export function Contacts() {
       setPollingInterval(null);
     }
   };
-
-  // Add a ref to track if component is mounted
-  useEffect(() => {
-    let isMounted = true;
-
-    // Your existing code...
-
-    return () => {
-      isMounted = false;
-      // Cleanup polling on unmount
-      if (pollingInterval) {
-        clearInterval(pollingInterval);
-        setPollingInterval(null);
-      }
-    };
-  }, [pollingInterval]);
-
-  // Add an effect to watch for showImportModal changes
-  useEffect(() => {
-    // If modal is closed, stop polling
-    if (!showImportModal && pollingInterval) {
-      clearInterval(pollingInterval);
-      setPollingInterval(null);
-    }
-  }, [showImportModal, pollingInterval]);
-
 
   // Download sample CSV
   const handleDownloadSample = () => {
@@ -283,6 +307,28 @@ export function Contacts() {
     a.download = 'sample-contacts.csv';
     a.click();
     window.URL.revokeObjectURL(url);
+  };
+
+  // Helper function to get avatar URL or initials
+  const getAvatarDisplay = (contact: Contact) => {
+    if (contact.avatar) {
+      return (
+        <img
+          src={contact.avatar}
+          alt={`${contact.first_name} ${contact.last_name}`}
+          className="w-8 h-8 rounded-full object-cover"
+          onError={(e) => {
+            e.currentTarget.style.display = 'none';
+            e.currentTarget.parentElement?.classList.add('avatar-fallback');
+          }}
+        />
+      );
+    }
+    return (
+      <div className="w-8 h-8 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center text-white font-medium text-sm">
+        {contact.first_name?.[0]}{contact.last_name?.[0]}
+      </div>
+    );
   };
 
   return (
@@ -406,13 +452,12 @@ export function Contacts() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
-                    className="border-b border-blue-50 hover:bg-blue-50/30 transition-colors group cursor-pointer"
-                    onClick={() => navigate(`/contacts/${contact.id}`)}
+                    className="border-b border-blue-50 hover:bg-blue-50/30 transition-colors group"
                   >
                     <td className="p-4">
                       <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center text-white font-medium text-sm">
-                          {contact.first_name?.[0]}{contact.last_name?.[0]}
+                        <div className="shrink-0">
+                          {getAvatarDisplay(contact)}
                         </div>
                         <div>
                           <p className="font-medium text-deep-ink">
@@ -457,16 +502,94 @@ export function Contacts() {
                         {contact.last_activity ? formatDate(contact.last_activity) : '-'}
                       </p>
                     </td>
-                    <td className="p-4 text-right">
-                      <button
-                        className="opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // Handle actions menu
-                        }}
-                      >
-                        <MoreVertical size={18} className="text-gray-400 hover:text-gray-600" />
-                      </button>
+                    <td className="p-4 text-right relative">
+                      <div className="flex items-center justify-end space-x-2">
+                        {/* Quick Action Buttons */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/contacts/${contact.id}`);
+                          }}
+                          className="p-2 hover:bg-blue-100 rounded-lg transition-colors text-blue-600"
+                          title="View Details"
+                        >
+                          <Eye size={16} />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/contacts/${contact.id}/edit`);
+                          }}
+                          className="p-2 hover:bg-green-100 rounded-lg transition-colors text-green-600"
+                          title="Edit Contact"
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteConfirmContact(contact);
+                          }}
+                          className="p-2 hover:bg-red-100 rounded-lg transition-colors text-red-600"
+                          title="Delete Contact"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+
+                        {/* More Actions Dropdown */}
+                        <div className="relative">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActionMenuContact(actionMenuContact === contact.id ? null : contact.id);
+                            }}
+                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                          >
+                            <MoreVertical size={16} className="text-gray-500" />
+                          </button>
+
+                          {actionMenuContact === contact.id && (
+                            <div
+                              className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-blue-100 z-20"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <button
+                                onClick={() => {
+                                  window.location.href = `mailto:${contact.email}`;
+                                  setActionMenuContact(null);
+                                }}
+                                className="w-full text-left px-4 py-2 hover:bg-blue-50 first:rounded-t-xl flex items-center"
+                              >
+                                <Mail size={14} className="mr-2 text-gray-500" />
+                                Send Email
+                              </button>
+                              {contact.phone && (
+                                <button
+                                  onClick={() => {
+                                    window.location.href = `tel:${contact.phone}`;
+                                    setActionMenuContact(null);
+                                  }}
+                                  className="w-full text-left px-4 py-2 hover:bg-blue-50 flex items-center"
+                                >
+                                  <Phone size={14} className="mr-2 text-gray-500" />
+                                  Call
+                                </button>
+                              )}
+                              <button
+                                onClick={() => {
+                                  navigator.clipboard.writeText(contact.email);
+                                  toast.success('Email copied to clipboard');
+                                  setActionMenuContact(null);
+                                }}
+                                className="w-full text-left px-4 py-2 hover:bg-blue-50 last:rounded-b-xl flex items-center"
+                              >
+                                <Copy size={14} className="mr-2 text-gray-500" />
+                                Copy Email
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </td>
                   </motion.tr>
                 ))
@@ -633,6 +756,45 @@ export function Contacts() {
               </div>
             </div>
           )}
+        </div>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={!!deleteConfirmContact}
+        onClose={() => setDeleteConfirmContact(null)}
+        maxWidth="sm"
+      >
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-deep-ink">Delete Contact</h2>
+            <button onClick={() => setDeleteConfirmContact(null)}>
+              <X size={20} className="text-gray-500 hover:text-gray-700" />
+            </button>
+          </div>
+
+          <p className="text-gray-600 mb-6">
+            Are you sure you want to delete{' '}
+            <span className="font-semibold">
+              {deleteConfirmContact?.first_name} {deleteConfirmContact?.last_name}
+            </span>
+            ? This action cannot be undone.
+          </p>
+
+          <div className="flex justify-end space-x-3">
+            <Button
+              variant="outline"
+              onClick={() => setDeleteConfirmContact(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              onClick={handleDeleteContact}
+            >
+              Delete Contact
+            </Button>
+          </div>
         </div>
       </Modal>
     </div>

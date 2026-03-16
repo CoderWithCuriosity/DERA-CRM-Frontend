@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, X } from 'lucide-react';
+import { ArrowLeft, Save, X, Camera } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { GlassCard } from '../../components/ui/GlassCard';
@@ -8,9 +8,11 @@ import { contactsApi } from '../../api/contacts';
 import type { CreateContactData } from '../../types/contact';
 import { HelpButton } from '../../components/ui/HelpButton';
 import { helpContent } from '../../utils/helpContent';
+import { useToast } from '../../hooks/useToast';
 
 export function CreateContact() {
     const navigate = useNavigate();
+    const toast = useToast();
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState<CreateContactData>({
         first_name: '',
@@ -25,15 +27,38 @@ export function CreateContact() {
         tags: [],
     });
     const [tagInput, setTagInput] = useState('');
+    const [avatarFile, setAvatarFile] = useState<File | null>(null);
+    const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+
+    const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setAvatarFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setAvatarPreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         try {
+            // First create the contact
             const response = await contactsApi.createContact(formData);
-            navigate(`/contacts/${response.data.contact.id}`);
+            const contactId = response.data.contact.id;
+
+            // Then upload avatar if selected
+            if (avatarFile) {
+                await contactsApi.uploadAvatar(contactId, avatarFile);
+            }
+
+            navigate(`/contacts/${contactId}`);
         } catch (error) {
             console.error('Failed to create contact:', error);
+            toast.error('Failed to create contact');
         } finally {
             setLoading(false);
         }
@@ -82,12 +107,49 @@ export function CreateContact() {
             <form onSubmit={handleSubmit}>
                 <GlassCard className="p-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Avatar Upload */}
+                        <div className="md:col-span-2 flex flex-col items-center py-4">
+                            <div className="relative group">
+                                <div className="w-24 h-24 rounded-full overflow-hidden bg-linear-to-br from-primary to-accent flex items-center justify-center">
+                                    {avatarPreview ? (
+                                        <img
+                                            src={avatarPreview}
+                                            alt="Avatar preview"
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <span className="text-white text-2xl font-bold">
+                                            {formData.first_name?.[0] || ''}{formData.last_name?.[0] || ''}
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <input
+                                        type="file"
+                                        accept="image/jpeg,image/png,image/gif,image/webp"
+                                        onChange={handleAvatarSelect}
+                                        className="hidden"
+                                        id="avatar-upload"
+                                    />
+                                    <label
+                                        htmlFor="avatar-upload"
+                                        className="cursor-pointer p-2 bg-white rounded-full hover:bg-gray-100 transition-colors"
+                                    >
+                                        <Camera size={18} className="text-gray-700" />
+                                    </label>
+                                </div>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-2">
+                                Upload avatar (optional, max 2MB)
+                            </p>
+                        </div>
                         {/* Basic Information */}
                         <div className="space-y-4">
                             <div className="flex row items-center space-x-2 pb-2">
                                 <h3 className="text-lg font-semibold text-deep-ink">Basic Information</h3>
                                 <HelpButton content={helpContent.contacts} size="sm" />
                             </div>
+
 
                             <div className="grid grid-cols-2 gap-4">
                                 <Input

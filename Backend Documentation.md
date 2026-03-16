@@ -691,9 +691,9 @@ logo: [image file] (max 3MB, formats: jpg, jpeg, png, gif)
 }
 ```
 
-### Contacts Endpoints
+## Contacts Endpoints
 
-#### 1. Create Contact
+### 1. Create Contact
 **POST** `/contacts`
 
 **Headers:** `Authorization: Bearer <token>`
@@ -732,6 +732,7 @@ logo: [image file] (max 3MB, formats: jpg, jpeg, png, gif)
       "source": "website",
       "notes": "Met at tech conference, interested in our enterprise plan",
       "tags": ["tech", "marketing", "lead"],
+      "avatar": null,
       "user_id": 1,
       "created_at": "2025-11-08T15:30:00.000Z",
       "updated_at": "2025-11-08T15:30:00.000Z"
@@ -740,7 +741,7 @@ logo: [image file] (max 3MB, formats: jpg, jpeg, png, gif)
 }
 ```
 
-#### 2. Get All Contacts
+### 2. Get All Contacts
 **GET** `/contacts`
 
 **Headers:** `Authorization: Bearer <token>`
@@ -773,6 +774,7 @@ logo: [image file] (max 3MB, formats: jpg, jpeg, png, gif)
         "status": "active",
         "source": "website",
         "tags": ["tech", "marketing", "lead"],
+        "avatar": "http://localhost:3000/uploads/avatars/avatar-1705316400000-abc123.jpg",
         "created_at": "2025-11-08T15:30:00.000Z",
         "updated_at": "2025-11-08T15:30:00.000Z",
         "deals_count": 2,
@@ -796,7 +798,7 @@ logo: [image file] (max 3MB, formats: jpg, jpeg, png, gif)
 }
 ```
 
-#### 3. Get Contact by ID
+### 3. Get Contact by ID
 **GET** `/contacts/:id`
 
 **Headers:** `Authorization: Bearer <token>`
@@ -818,6 +820,7 @@ logo: [image file] (max 3MB, formats: jpg, jpeg, png, gif)
       "source": "website",
       "notes": "Met at tech conference, interested in our enterprise plan",
       "tags": ["tech", "marketing", "lead"],
+      "avatar": "http://localhost:3000/uploads/avatars/avatar-1705316400000-abc123.jpg",
       "user_id": 1,
       "created_at": "2025-11-08T15:30:00.000Z",
       "updated_at": "2025-11-08T15:30:00.000Z",
@@ -858,7 +861,7 @@ logo: [image file] (max 3MB, formats: jpg, jpeg, png, gif)
 }
 ```
 
-#### 4. Update Contact
+### 4. Update Contact
 **PUT** `/contacts/:id`
 
 **Headers:** `Authorization: Bearer <token>`
@@ -889,16 +892,19 @@ logo: [image file] (max 3MB, formats: jpg, jpeg, png, gif)
       "job_title": "VP of Marketing",
       "notes": "Promoted to VP, now has larger budget",
       "tags": ["tech", "marketing", "vip"],
+      "avatar": "http://localhost:3000/uploads/avatars/avatar-1705316400000-abc123.jpg",
       "updated_at": "2025-11-08T16:00:00.000Z"
     }
   }
 }
 ```
 
-#### 5. Delete Contact
+### 5. Delete Contact
 **DELETE** `/contacts/:id`
 
 **Headers:** `Authorization: Bearer <token>`
+
+**Note:** This will also delete the contact's avatar file from the server.
 
 **Response (200 OK):**
 ```json
@@ -908,7 +914,42 @@ logo: [image file] (max 3MB, formats: jpg, jpeg, png, gif)
 }
 ```
 
-#### 6. Import Contacts
+### 6. Upload Contact Avatar
+**POST** `/contacts/:id/avatar`
+
+**Headers:** `Authorization: Bearer <token>`  
+**Content-Type:** `multipart/form-data`
+
+**Form Data:**
+```
+avatar: [Image file] (JPEG, PNG, GIF, WEBP, max 2MB)
+```
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Avatar uploaded successfully",
+  "data": {
+    "avatar": "http://localhost:3000/uploads/avatars/avatar-1705316400000-abc123.jpg"
+  }
+}
+```
+
+### 7. Delete Contact Avatar
+**DELETE** `/contacts/:id/avatar`
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Avatar deleted successfully"
+}
+```
+
+### 8. Import Contacts
 **POST** `/contacts/import`
 
 **Headers:** `Authorization: Bearer <token>`  
@@ -941,7 +982,7 @@ column_mapping: {
 }
 ```
 
-#### 7. Get Import Status
+### 9. Get Import Status
 **GET** `/contacts/import/:import_id/status`
 
 **Headers:** `Authorization: Bearer <token>`  
@@ -969,15 +1010,21 @@ column_mapping: {
 }
 ```
 
-#### 8. Export Contacts
+### 10. Export Contacts
 **GET** `/contacts/export`
 
 **Headers:** `Authorization: Bearer <token>`
 
 **Query Parameters:**
-- `format`: csv/excel (default: csv)
-- `fields`: Comma-separated list of fields to export
-- `filters`: Apply same filters as GET /contacts
+| Parameter | Type | Description | Default |
+|-----------|------|-------------|---------|
+| format | string | csv/excel | csv |
+| fields | string | Comma-separated list of fields | all fields |
+| status | string | Filter by status | - |
+| tag | string | Filter by tag | - |
+| search | string | Search query | - |
+
+**Note:** Avatar URLs are not included in exports for privacy/performance reasons.
 
 **Response (200 OK):**
 ```json
@@ -990,7 +1037,7 @@ column_mapping: {
 }
 ```
 
-#### 9. Add Tag to Contact
+### 11. Add Tag to Contact
 **POST** `/contacts/:id/tags`
 
 **Headers:** `Authorization: Bearer <token>`
@@ -1013,7 +1060,7 @@ column_mapping: {
 }
 ```
 
-#### 10. Remove Tag from Contact
+### 12. Remove Tag from Contact
 **DELETE** `/contacts/:id/tags/:tag`
 
 **Headers:** `Authorization: Bearer <token>`
@@ -1029,7 +1076,7 @@ column_mapping: {
 }
 ```
 
-#### 11. Get All Tags
+### 13. Get All Tags
 **GET** `/contacts/tags/all`
 
 **Headers:** `Authorization: Bearer <token>`
@@ -1053,6 +1100,31 @@ column_mapping: {
 }
 ```
 
+## Avatar Upload Specifications
+
+### Supported File Types
+- JPEG/JPG (`image/jpeg`)
+- PNG (`image/png`)
+- GIF (`image/gif`)
+- WEBP (`image/webp`)
+
+### File Size Limit
+- Maximum: 2MB per avatar
+
+### Storage
+- Avatars are stored in: `/uploads/avatars/`
+- Filename format: `avatar-[timestamp]-[uuid].[extension]`
+- Example: `avatar-1705316400000-abc123.jpg`
+
+### URL Format
+```
+http://localhost:3000/uploads/avatars/[filename]
+```
+
+### Automatic Cleanup
+- Old avatars are automatically deleted when uploading a new one
+- Avatars are deleted when the contact is deleted
+- Server may periodically clean up orphaned avatar files
 ### Deals & Sales Pipeline Endpoints
 
 #### 1. Create Deal

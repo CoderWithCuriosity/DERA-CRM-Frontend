@@ -29,6 +29,7 @@ export function HelpButton({ content, size = 'md' }: HelpButtonProps) {
   return (
     <>
       <button
+        type='button'
         onClick={() => setIsOpen(true)}
         className={`${sizeClasses[size]} text-gray-400 hover:text-primary transition-colors`}
         title="Learn more about this feature"
@@ -60,6 +61,7 @@ export function HelpButton({ content, size = 'md' }: HelpButtonProps) {
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-2xl font-bold text-deep-ink">{content.title}</h2>
                   <button
+                    type="button"
                     onClick={() => setIsOpen(false)}
                     className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
                   >
@@ -140,6 +142,7 @@ export function HelpButton({ content, size = 'md' }: HelpButtonProps) {
                 {/* Close Button */}
                 <div className="flex justify-end mt-6">
                   <button
+                    type="button"
                     onClick={() => setIsOpen(false)}
                     className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
                   >
