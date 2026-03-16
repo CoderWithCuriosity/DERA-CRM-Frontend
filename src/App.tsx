@@ -7,9 +7,11 @@ import ResetPassword from './pages/auth/ResetPassword';
 import { Dashboard } from './pages/dashboard/Dashboard';
 import { Contacts } from './pages/contacts/Contacts';
 import ContactDetail from './pages/contacts/ContactDetail';
-import { EditContact } from './pages/contacts/EditContact'; 
+import { EditContact } from './pages/contacts/EditContact';
 import Deals from './pages/deals/Deals';
 import DealDetail from './pages/deals/DealDetail';
+import CreateDeal from './pages/deals/CreateDeal';
+import EditDeal from './pages/deals/EditDeal';
 import Tickets from './pages/tickets/Tickets';
 import TicketDetail from './pages/tickets/TicketDetail';
 import Activities from './pages/activities/Activities';
@@ -50,7 +52,7 @@ function App() {
           </ProtectedRoute>
         }>
           <Route index element={<Dashboard />} />
-          
+
           {/* Contacts */}
           <Route path="contacts">
             <Route index element={<Contacts />} />
@@ -63,6 +65,8 @@ function App() {
           <Route path="deals">
             <Route index element={<Deals />} />
             <Route path=":id" element={<DealDetail />} />
+            <Route path="new" element={<CreateDeal />} />
+            <Route path=":id/edit" element={<EditDeal />} />
           </Route>
 
           {/* Tickets */}
@@ -90,7 +94,7 @@ function App() {
               <Organization />
             </AdminRoute>
           } />
-          
+
           <Route path="settings/users" element={
             <AdminRoute>
               <Users />
@@ -103,13 +107,13 @@ function App() {
               <AuditLogs />
             </AdminRoute>
           } />
-          
+
           <Route path="admin/system-health" element={
             <AdminRoute>
               <SystemHealth />
             </AdminRoute>
           } />
-          
+
           <Route path="admin/backups" element={
             <AdminRoute>
               <Backups />

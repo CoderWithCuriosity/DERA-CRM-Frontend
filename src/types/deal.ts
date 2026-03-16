@@ -1,4 +1,3 @@
-import type { PaginatedResponse } from './api';
 
 export type DealStage = 'lead' | 'qualified' | 'proposal' | 'negotiation' | 'won' | 'lost';
 export type DealStatus = 'open' | 'won' | 'lost';
@@ -17,7 +16,6 @@ export interface Deal {
   notes: string | null;
   created_at: string;
   updated_at: string;
-  weighted_amount: number;
   is_overdue?: boolean;
   contact?: {
     id: number;
@@ -27,7 +25,7 @@ export interface Deal {
     email?: string;
     phone?: string;
   };
-  user?: {
+  owner?: {
     id: number;
     first_name: string;
     last_name: string;
@@ -91,7 +89,7 @@ export interface DealDetailResponse {
   data: {
     deal: Deal & {
       contact: NonNullable<Deal['contact']>;
-      user: NonNullable<Deal['user']>;
+      owner: NonNullable<Deal['owner']>;
       activities?: Array<{
         id: number;
         type: string;
@@ -157,4 +155,19 @@ export interface KanbanBoardResponse {
   data: KanbanBoard;
 }
 
-export type DealsResponse = PaginatedResponse<Deal>;
+
+export interface DealsResponse {
+  success: boolean;
+  data: {
+    data: Deal[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      pages: number;
+      hasNext: boolean;
+      hasPrev: boolean;
+    };
+    summary: PipelineSummary;
+  };
+}

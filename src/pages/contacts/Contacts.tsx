@@ -455,7 +455,10 @@ export function Contacts() {
                     className="border-b border-blue-50 hover:bg-blue-50/30 transition-colors group"
                   >
                     <td className="p-4">
-                      <div className="flex items-center space-x-3">
+                      <button
+                        onClick={() => navigate(`/contacts/${contact.id}`)}
+                        className="flex items-center space-x-3 hover:opacity-75 transition-opacity w-full text-left"
+                      >
                         <div className="shrink-0">
                           {getAvatarDisplay(contact)}
                         </div>
@@ -465,23 +468,38 @@ export function Contacts() {
                           </p>
                           <p className="text-sm text-gray-500">{contact.job_title || '-'}</p>
                         </div>
-                      </div>
+                      </button>
                     </td>
                     <td className="p-4">
-                      <p className="text-sm text-gray-600">{contact.email}</p>
-                      {contact.phone && (
-                        <p className="text-xs text-gray-400">{contact.phone}</p>
-                      )}
-                    </td>
-                    <td className="p-4">
-                      <p className="text-sm text-gray-600">{contact.company || '-'}</p>
-                    </td>
-                    <td className="p-4">
-                      <Badge
-                        variant={contact.status === 'active' ? 'success' : contact.status === 'lead' ? 'info' : 'default'}
+                      <button
+                        onClick={() => navigate(`/contacts/${contact.id}`)}
+                        className="hover:opacity-75 transition-opacity text-left w-full"
                       >
-                        {contact.status}
-                      </Badge>
+                        <p className="text-sm text-gray-600">{contact.email}</p>
+                        {contact.phone && (
+                          <p className="text-xs text-gray-400">{contact.phone}</p>
+                        )}
+                      </button>
+                    </td>
+                    <td className="p-4">
+                      <button
+                        onClick={() => navigate(`/contacts/${contact.id}`)}
+                        className="hover:opacity-75 transition-opacity text-left w-full"
+                      >
+                        <p className="text-sm text-gray-600">{contact.company || '-'}</p>
+                      </button>
+                    </td>
+                    <td className="p-4">
+                      <button
+                        onClick={() => navigate(`/contacts/${contact.id}`)}
+                        className="hover:opacity-75 transition-opacity"
+                      >
+                        <Badge
+                          variant={contact.status === 'active' ? 'success' : contact.status === 'lead' ? 'info' : 'default'}
+                        >
+                          {contact.status}
+                        </Badge>
+                      </button>
                     </td>
                     <td className="p-4">
                       <div className="flex flex-wrap gap-1">

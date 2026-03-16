@@ -6,7 +6,7 @@ export const dealsApi = {
     api.get<DealsResponse>('/deals', { params: filters }),
 
   getDealById: (id: number) => 
-    api.get<{ deal: DealDetailResponse['data']['deal'] }>(`/deals/${id}`),
+    api.get< DealDetailResponse >(`/deals/${id}`),
 
   createDeal: (data: CreateDealData) => 
     api.post<{ data: { deal: Deal } }>('/deals', data),

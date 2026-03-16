@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Edit, Trash2, CheckCircle, XCircle } from 'lucide-react';
 import { GlassCard } from '../../components/ui/GlassCard';
@@ -9,12 +9,18 @@ import type { DealDetailResponse } from '../../types/deal';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { useToast } from '../../hooks/useToast';
 
+// Helper function to calculate weighted amount
+const calculateWeightedAmount = (amount: number, probability: number): number => {
+  return amount * (probability / 100);
+};
+
 export default function DealDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const toast = useToast();
   const [deal, setDeal] = useState<DealDetailResponse['data']['deal'] | null>(null);
   const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
     if (id) fetchDeal();
@@ -23,7 +29,7 @@ export default function DealDetail() {
   const fetchDeal = async () => {
     try {
       const response = await dealsApi.getDealById(Number(id));
-      setDeal(response.deal);
+      setDeal(response.data.deal);
     } catch (error) {
       toast.error('Failed to load deal');
       navigate('/deals');
@@ -33,17 +39,26 @@ export default function DealDetail() {
   };
 
   const handleWin = async () => {
+    if (!window.confirm('Mark this deal as won?')) return;
+    
+    setUpdating(true);
     try {
-      await dealsApi.markAsWon(Number(id), { actual_close_date: new Date().toISOString() });
-      toast.success('Deal marked as won');
+      await dealsApi.markAsWon(Number(id), { 
+        actual_close_date: new Date().toISOString() 
+      });
+      toast.success('Deal marked as won successfully');
       fetchDeal();
-    } catch (error) {
-      toast.error('Failed to update deal');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update deal');
+    } finally {
+      setUpdating(false);
     }
   };
 
   const handleLost = async () => {
-    const reason = prompt('Enter loss reason (optional)');
+    const reason = prompt('Enter loss reason (optional):');
+    
+    setUpdating(true);
     try {
       await dealsApi.markAsLost(Number(id), {
         actual_close_date: new Date().toISOString(),
@@ -51,21 +66,34 @@ export default function DealDetail() {
       });
       toast.success('Deal marked as lost');
       fetchDeal();
-    } catch (error) {
-      toast.error('Failed to update deal');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update deal');
+    } finally {
+      setUpdating(false);
     }
   };
 
   const handleDelete = async () => {
-    if (!window.confirm('Delete this deal?')) return;
+    if (!window.confirm('Are you sure you want to delete this deal? This action cannot be undone.')) return;
+    
     try {
       await dealsApi.deleteDeal(Number(id));
-      toast.success('Deal deleted');
+      toast.success('Deal deleted successfully');
       navigate('/deals');
-    } catch (error) {
-      toast.error('Failed to delete deal');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete deal');
     }
   };
+
+  const handleEdit = () => {
+    navigate(`/deals/${id}/edit`);
+  };
+
+  // Calculate weighted amount using useMemo
+  const weightedAmount = useMemo(() => {
+    if (!deal) return 0;
+    return calculateWeightedAmount(deal.amount, deal.probability);
+  }, [deal?.amount, deal?.probability]);
 
   if (loading) return <div className="flex justify-center items-center h-64"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>;
   if (!deal) return null;
@@ -78,6 +106,8 @@ export default function DealDetail() {
     won: 'bg-green-100 text-green-800',
     lost: 'bg-gray-100 text-gray-800',
   };
+
+  const canChangeStatus = deal.status === 'open' && deal.stage !== 'won' && deal.stage !== 'lost';
 
   return (
     <div className="space-y-6">
@@ -97,20 +127,40 @@ export default function DealDetail() {
             </p>
           </div>
           <div className="flex space-x-2">
-            {deal.status === 'open' && (
+            {canChangeStatus && (
               <>
-                <Button variant="success" size="sm" onClick={handleWin}>
+                <Button 
+                  variant="success" 
+                  size="sm" 
+                  onClick={handleWin}
+                  disabled={updating}
+                >
                   <CheckCircle size={16} className="mr-2" /> Won
                 </Button>
-                <Button variant="danger" size="sm" onClick={handleLost}>
+                <Button 
+                  variant="danger" 
+                  size="sm" 
+                  onClick={handleLost}
+                  disabled={updating}
+                >
                   <XCircle size={16} className="mr-2" /> Lost
                 </Button>
               </>
             )}
-            <Button variant="outline" size="sm">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleEdit}
+              disabled={updating}
+            >
               <Edit size={16} className="mr-2" /> Edit
             </Button>
-            <Button variant="danger" size="sm" onClick={handleDelete}>
+            <Button 
+              variant="danger" 
+              size="sm" 
+              onClick={handleDelete}
+              disabled={updating}
+            >
               <Trash2 size={16} className="mr-2" /> Delete
             </Button>
           </div>
@@ -131,7 +181,7 @@ export default function DealDetail() {
           </div>
           <div className="p-4 bg-white/50 rounded-lg">
             <p className="text-sm text-gray-500">Weighted</p>
-            <p className="text-xl font-semibold text-deep-ink">{formatCurrency(deal.weighted_amount)}</p>
+            <p className="text-xl font-semibold text-deep-ink">{formatCurrency(weightedAmount)}</p>
           </div>
         </div>
 
