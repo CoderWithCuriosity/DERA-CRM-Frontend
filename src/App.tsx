@@ -4,6 +4,7 @@ import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import ResetPassword from './pages/auth/ResetPassword';
+import VerifyEmail from './pages/auth/VerifyEmail';
 import { Dashboard } from './pages/dashboard/Dashboard';
 import { Contacts } from './pages/contacts/Contacts';
 import ContactDetail from './pages/contacts/ContactDetail';
@@ -44,6 +45,8 @@ function App() {
         } />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
+
 
         {/* Protected Routes */}
         <Route path="/" element={

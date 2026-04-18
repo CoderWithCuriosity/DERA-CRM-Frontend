@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom'; // Change this
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -24,7 +24,8 @@ const resetSchema = z.object({
 type ResetFormData = z.infer<typeof resetSchema>;
 
 export default function ResetPassword() {
-  const { token } = useParams<{ token: string }>();
+  const [searchParams] = useSearchParams(); // Use useSearchParams instead of useParams
+  const token = searchParams.get('token'); // Get token from query params
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const toast = useToast();
@@ -37,6 +38,14 @@ export default function ResetPassword() {
     resolver: zodResolver(resetSchema),
   });
 
+  // Add validation to check if token exists
+  useEffect(() => {
+    if (!token) {
+      toast.error('Invalid or missing reset token');
+      navigate('/forgot-password');
+    }
+  }, [token, navigate, toast]);
+
   const onSubmit = async (data: ResetFormData) => {
     if (!token) {
       toast.error('Invalid reset token');
@@ -45,10 +54,19 @@ export default function ResetPassword() {
 
     try {
       setLoading(true);
-      await authApi.resetPassword({ token, password: data.password });
+      // Make sure the data structure matches what backend expects
+      await authApi.resetPassword({ 
+        token: token,  // Explicitly pass the token
+        password: data.password 
+      });
       toast.success('Password reset successfully');
-      navigate('/login');
+      
+      // Add a small delay before redirecting to show success message
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
     } catch (error: any) {
+      console.error('Reset password error:', error);
       toast.error(error.response?.data?.message || 'Failed to reset password');
     } finally {
       setLoading(false);
