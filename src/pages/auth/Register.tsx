@@ -59,7 +59,7 @@ export default function Register() {
       >
         <GlassCard className="p-8">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl mx-auto mb-4" />
+            <div className="w-16 h-16 bg-linear-to-br from-primary to-accent rounded-2xl mx-auto mb-4" />
             <h1 className="text-2xl font-bold text-deep-ink">Create Account</h1>
             <p className="text-gray-600 mt-1">Get started with DERA CRM</p>
           </div>
