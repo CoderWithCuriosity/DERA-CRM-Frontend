@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Plus,
@@ -51,13 +51,14 @@ export default function Deals() {
   const navigate = useNavigate();
   const toast = useToast();
   const { user } = useAuth();
-  
+
   // Data states
   const [deals, setDeals] = useState<(Deal & { weighted_amount: number })[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
-  
+  const hasFetched = useRef(false); 
+
   // Filter states
   const [filters, setFilters] = useState<DealFilters>({
     page: 1,
@@ -65,7 +66,7 @@ export default function Deals() {
   });
   const [showFilters, setShowFilters] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  
+
   // Pagination
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
@@ -81,9 +82,19 @@ export default function Deals() {
   }, [deals]);
 
   useEffect(() => {
-    fetchDeals();
-    fetchUsers();
-  }, [filters]);
+    if (!hasFetched.current) {
+      hasFetched.current = true;
+      fetchDeals();
+      fetchUsers();
+    }
+  }, []);
+
+  
+  useEffect(() => {
+    if (hasFetched.current) {
+      fetchDeals();
+    }
+  }, [filters.page, filters.limit, filters.stage, filters.status, filters.user_id, filters.search]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -96,17 +107,17 @@ export default function Deals() {
     setLoading(true);
     try {
       const response = await dealsApi.getDeals(filters);
-      
+
       // Access the nested data structure correctly
       const items = response.data?.data || [];
-      
+
       // Enrich deals with calculated weighted amount
       const enrichedDeals = items.map(enrichDealWithWeightedAmount);
       setDeals(enrichedDeals);
-      
+
       setTotalItems(response.data?.pagination?.total || 0);
       setTotalPages(response.data?.pagination?.pages || 1);
-      
+
     } catch (error) {
       toast.error('Failed to load deals');
       // Set empty state on error
@@ -145,10 +156,10 @@ export default function Deals() {
     try {
       const response = await dealsApi.getDeals({ ...filters, limit: 1000 });
       const items = response.data?.data || [];
-      
+
       // Enrich with weighted amount for export
       const enrichedItems = items.map(enrichDealWithWeightedAmount);
-      
+
       // Convert to CSV with safe access
       const csv = [
         ['ID', 'Name', 'Contact', 'Company', 'Stage', 'Status', 'Amount', 'Probability', 'Weighted Amount', 'Expected Close', 'Owner'],
@@ -174,7 +185,7 @@ export default function Deals() {
       a.download = `deals_export_${new Date().toISOString().split('T')[0]}.csv`;
       a.click();
       window.URL.revokeObjectURL(url);
-      
+
       toast.success('Export completed');
     } catch (error) {
       toast.error('Export failed');
@@ -183,15 +194,24 @@ export default function Deals() {
     }
   };
 
-  const activeFilterCount = Object.keys(filters).filter(key => 
+  const activeFilterCount = Object.keys(filters).filter(key =>
     !['page', 'limit'].includes(key) && filters[key as keyof DealFilters]
   ).length;
 
   // Safe check for empty state
   const hasNoDeals = !loading && deals.length === 0;
-  const hasNoFilters = !Object.keys(filters).some(k => 
+  const hasNoFilters = !Object.keys(filters).some(k =>
     !['page', 'limit'].includes(k) && filters[k as keyof DealFilters]
   );
+
+  // ========== SHOW LOADING FIRST ==========
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen pb-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   // Empty state
   if (hasNoDeals && hasNoFilters) {
