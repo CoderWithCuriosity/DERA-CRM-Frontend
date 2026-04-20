@@ -38,13 +38,17 @@ export default function Register() {
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
   });
-
+  // Register.tsx - Modified onSubmit function
   const onSubmit = async (data: RegisterFormData) => {
     try {
       setError('');
       const { confirmPassword, ...registerData } = data;
       await registerUser(registerData as RegisterData);
-      navigate('/');
+      
+      // Don't navigate to dashboard - show verification message instead
+      navigate('/verify-email-sent', { 
+        state: { email: data.email } 
+      });
     } catch (err: any) {
       setError(err.response?.data?.message || 'Registration failed');
     }

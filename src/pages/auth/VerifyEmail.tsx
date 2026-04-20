@@ -1,4 +1,3 @@
-// pages/auth/VerifyEmail.tsx
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { authApi } from '../../api/auth';

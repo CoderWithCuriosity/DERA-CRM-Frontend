@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -49,7 +49,7 @@ export default function Login() {
       >
         <GlassCard className="p-8">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl mx-auto mb-4" />
+            <div className="w-16 h-16 bg-linear-to-br from-primary to-accent rounded-2xl mx-auto mb-4" />
             <h1 className="text-2xl font-bold text-deep-ink">Welcome Back</h1>
             <p className="text-gray-600 mt-1">Sign in to your account</p>
           </div>
@@ -99,6 +99,14 @@ export default function Login() {
                 Sign up
               </Link>
             </p>
+          </div>
+          <div className="mt-4 text-center">
+            <Link
+              to="/request-verification"
+              className="text-xs text-gray-500 hover:text-primary"
+            >
+              Didn't receive verification email?
+            </Link>
           </div>
         </GlassCard>
       </motion.div>

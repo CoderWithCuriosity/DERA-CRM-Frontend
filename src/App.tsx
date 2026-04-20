@@ -5,6 +5,7 @@ import Register from './pages/auth/Register';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import ResetPassword from './pages/auth/ResetPassword';
 import VerifyEmail from './pages/auth/VerifyEmail';
+import RequestVerification from './pages/auth/RequestVerification';
 import { Dashboard } from './pages/dashboard/Dashboard';
 import { Contacts } from './pages/contacts/Contacts';
 import ContactDetail from './pages/contacts/ContactDetail';
@@ -29,6 +30,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import AdminRoute from './components/auth/AdminRoute';
 import { useAuth } from './hooks/useAuth';
 import { CreateContact } from './pages/contacts/CreateContact';
+import VerifyEmailSent from './pages/auth/VerifyEmailSent';
 
 function App() {
   const { isAuthenticated } = useAuth();
@@ -45,7 +47,10 @@ function App() {
         } />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="//verify-email-sent" element={<VerifyEmailSent />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/request-verification" element={<RequestVerification />} />
+
 
 
         {/* Protected Routes */}
