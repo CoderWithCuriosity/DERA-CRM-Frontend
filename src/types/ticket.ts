@@ -29,11 +29,13 @@ export interface Ticket {
     last_name: string;
     email: string;
     phone: string | null;
+    company?: string;
   };
   createdBy?: {
     id: number;
     first_name: string;
     last_name: string;
+    email?: string;
   };
   assignedTo?: {
     id: number;

@@ -16,6 +16,8 @@ import CreateDeal from './pages/deals/CreateDeal';
 import EditDeal from './pages/deals/EditDeal';
 import Tickets from './pages/tickets/Tickets';
 import TicketDetail from './pages/tickets/TicketDetail';
+import CreateTicket from './pages/tickets/CreateTicket';
+import EditTicket from './pages/tickets/EditTicket';
 import Activities from './pages/activities/Activities';
 import Campaigns from './pages/campaigns/Campaigns';
 import CampaignDetail from './pages/campaigns/CampaignDetail';
@@ -81,6 +83,8 @@ function App() {
           <Route path="tickets">
             <Route index element={<Tickets />} />
             <Route path=":id" element={<TicketDetail />} />
+            <Route path="new" element={<CreateTicket />} />
+            <Route path=":id/edit" element={<EditTicket />} />
           </Route>
 
           {/* Activities */}

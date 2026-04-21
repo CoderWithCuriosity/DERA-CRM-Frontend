@@ -31,7 +31,7 @@ export default function Tickets() {
       setError(null);
       const response = await ticketsApi.getTickets({ ...filters, search: debouncedSearch });
       // Guard against undefined response or items
-      setTickets(response?.data?.items || []);
+      setTickets(response?.data?.data || []);
     } catch (error) {
       console.error('Failed to fetch tickets:', error);
       setError('Failed to load tickets. Please try again.');

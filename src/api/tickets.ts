@@ -6,7 +6,7 @@ export const ticketsApi = {
     api.get<TicketsResponse>('/tickets', { params: filters }),
 
   getTicketById: (id: number) => 
-    api.get<{ ticket: TicketDetailResponse['data']['ticket'] }>(`/tickets/${id}`),
+    api.get<TicketDetailResponse>(`/tickets/${id}`),
 
   createTicket: (data: CreateTicketData) => 
     api.post<{ data: { ticket: Ticket } }>('/tickets', data),
