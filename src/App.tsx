@@ -19,6 +19,8 @@ import TicketDetail from './pages/tickets/TicketDetail';
 import CreateTicket from './pages/tickets/CreateTicket';
 import EditTicket from './pages/tickets/EditTicket';
 import Activities from './pages/activities/Activities';
+import ActivityDetail from './pages/activities/ActivityDetail';
+import CreateActivity from './pages/activities/CreateActivity';
 import Campaigns from './pages/campaigns/Campaigns';
 import CampaignDetail from './pages/campaigns/CampaignDetail';
 import EmailTemplates from './pages/campaigns/EmailTemplates';
@@ -88,7 +90,12 @@ function App() {
           </Route>
 
           {/* Activities */}
-          <Route path="activities" element={<Activities />} />
+          <Route path="activities">
+            <Route index element={<Activities />} />
+            <Route path="new" element={<CreateActivity />} />
+            <Route path=":id" element={<ActivityDetail />} />
+            <Route path=":id/edit" element={<CreateActivity />} />
+          </Route>
 
           {/* Campaigns */}
           <Route path="campaigns">

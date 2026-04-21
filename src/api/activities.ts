@@ -6,7 +6,7 @@ export const activitiesApi = {
     api.get<ActivitiesResponse>('/activities', { params: filters }),
 
   getActivityById: (id: number) => 
-    api.get<{ data: Activity }>(`/activities/${id}`),
+    api.get<{ success: Boolean, data: {activity: Activity} }>(`/activities/${id}`),
 
   createActivity: (data: CreateActivityData) => 
     api.post<{ data: { activity: Activity } }>('/activities', data),

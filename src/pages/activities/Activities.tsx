@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, Plus, Filter, Inbox, AlertCircle, Clock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { GlassCard } from '../../components/ui/GlassCard';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
@@ -12,6 +13,7 @@ type ActivityType = 'call' | 'email' | 'meeting' | 'task' | 'note' | 'follow-up'
 type ActivityStatus = 'scheduled' | 'completed' | 'cancelled' | 'overdue';
 
 export default function Activities() {
+  const navigate = useNavigate();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -19,14 +21,15 @@ export default function Activities() {
 
   useEffect(() => {
     fetchActivities();
-  }, [filters]);
+  }, [filters.page, filters.type, filters.status]);
 
   const fetchActivities = async () => {
     try {
       setLoading(true);
       setError(null);
       const response = await activitiesApi.getActivities(filters);
-      setActivities(response?.data?.items || []);
+      // Fix: response.data.data contains the activities array
+      setActivities(response?.data?.data || []);
     } catch (error) {
       console.error('Failed to load activities:', error);
       setError('Failed to load activities. Please try again.');
@@ -105,7 +108,7 @@ export default function Activities() {
           ) : (
             <>
               <p className="text-gray-500 mb-4">Get started by logging your first activity</p>
-              <Button>
+              <Button onClick={() => navigate('/activities/new')}>
                 <Plus size={18} className="mr-2" /> Log Activity
               </Button>
             </>
@@ -117,26 +120,18 @@ export default function Activities() {
     return (
       <div className="space-y-4">
         {activities.map((activity, idx) => {
-          // Safely access activity properties with fallbacks
           const activityType = (activity?.type || 'note') as ActivityType;
           const activityStatus = (activity?.status || 'scheduled') as ActivityStatus;
           const typeColor = typeColors[activityType] || 'bg-gray-100 text-gray-800';
           
-          // Format contact name safely
           const contactName = activity?.contact 
-            ? [activity.contact.first_name, activity.contact.last_name]
-                .filter(Boolean)
-                .join(' ') || 'Unknown contact'
+            ? `${activity.contact.first_name || ''} ${activity.contact.last_name || ''}`.trim() || 'Unknown contact'
             : null;
 
-          // Format user name safely
           const userName = activity?.user
-            ? [activity.user.first_name, activity.user.last_name]
-                .filter(Boolean)
-                .join(' ') || 'Unknown user'
+            ? `${activity.user.first_name || ''} ${activity.user.last_name || ''}`.trim() || 'Unknown user'
             : null;
 
-          // Format deal name safely
           const dealName = activity?.deal?.name;
 
           return (
@@ -145,11 +140,13 @@ export default function Activities() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.05 }}
+              className="cursor-pointer hover:shadow-md transition-shadow"
+              onClick={() => navigate(`/activities/${activity.id}`)}
             >
-              <GlassCard className="p-4 hover:shadow-md transition-shadow">
+              <GlassCard className="p-4">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start space-x-3 flex-1">
-                    <div className={`p-2 rounded-lg ${typeColor} flex-shrink-0`}>
+                    <div className={`p-2 rounded-lg ${typeColor} shrink-0`}>
                       <Calendar size={18} />
                     </div>
                     <div className="flex-1">
@@ -208,7 +205,7 @@ export default function Activities() {
                     </div>
                   </div>
                   
-                  <div className="text-right flex-shrink-0 ml-4">
+                  <div className="text-right shrink-0 ml-4">
                     {activity?.scheduled_date ? (
                       <>
                         <p className="text-sm font-medium whitespace-nowrap">
@@ -246,7 +243,7 @@ export default function Activities() {
           <h1 className="text-3xl font-bold text-deep-ink">Activities</h1>
           <p className="text-gray-600 mt-1">Track your interactions</p>
         </div>
-        <Button>
+        <Button onClick={() => navigate('/activities/new')}>
           <Plus size={18} className="mr-2" /> Log Activity
         </Button>
       </div>
@@ -254,11 +251,12 @@ export default function Activities() {
       <GlassCard className="p-4">
         <div className="flex flex-wrap gap-3">
           <select
-            className="px-3 py-2 bg-white/70 border border-blue-100 rounded-xl min-w-[150px]"
+            className="px-3 py-2 bg-white/70 border border-blue-100 rounded-xl min-w-37.5"
             value={filters.type || ''}
             onChange={(e) => setFilters({ 
               ...filters, 
-              type: (e.target.value || undefined) as ActivityType 
+              type: (e.target.value || undefined) as ActivityType,
+              page: 1 
             })}
           >
             <option value="">All Types</option>
@@ -271,11 +269,12 @@ export default function Activities() {
           </select>
           
           <select
-            className="px-3 py-2 bg-white/70 border border-blue-100 rounded-xl min-w-[150px]"
+            className="px-3 py-2 bg-white/70 border border-blue-100 rounded-xl min-w-37.5"
             value={filters.status || ''}
             onChange={(e) => setFilters({ 
               ...filters, 
-              status: (e.target.value || undefined) as ActivityStatus 
+              status: (e.target.value || undefined) as ActivityStatus,
+              page: 1 
             })}
           >
             <option value="">All Statuses</option>
@@ -294,7 +293,6 @@ export default function Activities() {
           </Button>
         </div>
         
-        {/* Active filters indicator */}
         {(filters.type || filters.status) && (
           <div className="mt-3 flex items-center space-x-2">
             <span className="text-xs text-gray-500">Active filters:</span>

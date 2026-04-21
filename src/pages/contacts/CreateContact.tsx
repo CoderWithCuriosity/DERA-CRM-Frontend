@@ -22,7 +22,7 @@ export function CreateContact() {
         company: '',
         job_title: '',
         status: 'lead',
-        source: 'others',
+        source: 'website',
         notes: '',
         tags: [],
     });
