@@ -132,7 +132,7 @@ export default function CreateActivity() {
   const fetchActivity = async () => {
     try {
       const response = await activitiesApi.getActivityById(Number(id));
-      const activity = response.data;
+      const activity = response.data.activity;
       reset({
         type: activity.type,
         subject: activity.subject,

@@ -133,7 +133,7 @@ export default function Deals() {
     if (user?.role === 'admin') {
       try {
         const response = await usersApi.getUsers();
-        setUsers(response.data?.items || []);
+        setUsers(response.data?.data || []);
       } catch (error) {
         console.error('Failed to load users');
         setUsers([]);

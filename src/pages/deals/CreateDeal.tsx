@@ -101,7 +101,7 @@ export default function CreateDeal() {
   const fetchUsers = async () => {
     try {
       const response = await usersApi.getUsers();
-      const usersData = response.data?.items || response.data?.items || [];
+      const usersData = response.data?.data || response.data?.data || [];
       setUsers(usersData);
     } catch (error) {
       console.error('Failed to load users');
