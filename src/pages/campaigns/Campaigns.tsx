@@ -24,7 +24,7 @@ export default function Campaigns() {
       setLoading(true);
       setError(null);
       const response = await campaignsApi.getCampaigns();
-      setCampaigns(response?.data?.items || []);
+      setCampaigns(response?.data?.data || []);
     } catch (error) {
       console.error('Failed to load campaigns:', error);
       setError('Failed to load campaigns. Please try again.');

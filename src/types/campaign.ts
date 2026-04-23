@@ -93,12 +93,12 @@ export interface CampaignAnalytics {
   }>;
 }
 
+// Update the CampaignDetailResponse interface
 export interface CampaignDetailResponse {
   success: boolean;
   data: {
     campaign: Campaign & {
       template: NonNullable<Campaign['template']>;
-      analytics?: CampaignAnalytics;
       recipients?: Array<{
         contact_id: number;
         email: string;
@@ -106,7 +106,13 @@ export interface CampaignDetailResponse {
         opened_at: string | null;
         clicked_at: string | null;
       }>;
+      createdBy?: {
+        id: number;
+        first_name: string;
+        last_name: string;
+      };
     };
+    analytics: CampaignAnalytics;
   };
 }
 
