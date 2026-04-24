@@ -3,16 +3,16 @@ import type { EmailTemplate, CreateTemplateData, UpdateTemplateData } from '../t
 
 export const emailTemplatesApi = {
   getTemplates: () => 
-    api.get<{ data: { templates: EmailTemplate[] } }>('/email-templates'),
+    api.get<{ data: { data: EmailTemplate[] } }>('/email-templates'),
 
   getTemplateById: (id: number) => 
     api.get<{ data: { template: EmailTemplate } }>(`/email-templates/${id}`),
 
   createTemplate: (data: CreateTemplateData) => 
-    api.post<{ data: { template: EmailTemplate } }>('/email-templates', data),
+    api.post<{ data: { data: EmailTemplate } }>('/email-templates', data),
 
   updateTemplate: (id: number, data: UpdateTemplateData) => 
-    api.put<{ data: { template: EmailTemplate } }>(`/email-templates/${id}`, data),
+    api.put<{ data: { data: EmailTemplate } }>(`/email-templates/${id}`, data),
 
   deleteTemplate: (id: number) => 
     api.delete(`/email-templates/${id}`),
@@ -21,5 +21,9 @@ export const emailTemplatesApi = {
     api.post(`/email-templates/${id}/preview`, { test_data: testData }),
 
   duplicateTemplate: (id: number) => 
-    api.post<{ data: { template: EmailTemplate } }>(`/email-templates/${id}/duplicate`),
+    api.post<{ data: { data: EmailTemplate } }>(`/email-templates/${id}/duplicate`, {}, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }),
 };

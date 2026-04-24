@@ -132,32 +132,63 @@ export function EditContact() {
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
+  e.preventDefault();
 
-    if (!formData.first_name || !formData.last_name || !formData.email) {
-      toast.error('Please fill in all required fields');
-      return;
+  // Validate required fields
+  if (!formData.first_name || !formData.last_name || !formData.email) {
+    toast.error('Please fill in all required fields');
+    return;
+  }
+
+  // Validate email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(formData.email)) {
+    toast.error('Please enter a valid email address');
+    return;
+  }
+
+  try {
+    setSaving(true);
+    
+    // Log what we're sending for debugging
+    console.log('Updating contact with data:', formData);
+    
+    // Update contact - make sure email is included
+    const updateData = {
+      first_name: formData.first_name,
+      last_name: formData.last_name,
+      email: formData.email, // This should be the new email
+      phone: formData.phone,
+      company: formData.company,
+      job_title: formData.job_title,
+      status: formData.status,
+      source: formData.source,
+      notes: formData.notes,
+      tags: formData.tags,
+    };
+    
+    const response = await contactsApi.updateContact(Number(id), updateData);
+    
+    // Log the response
+    console.log('Update response:', response);
+
+    // Upload new avatar if selected
+    if (avatarFile) {
+      await contactsApi.uploadAvatar(Number(id), avatarFile);
     }
 
-    try {
-      setSaving(true);
-      await contactsApi.updateContact(Number(id), formData);
-
-      // Upload new avatar if selected
-      if (avatarFile) {
-        await contactsApi.uploadAvatar(Number(id), avatarFile);
-      }
-
-      toast.success('Contact updated successfully');
-      navigate(`/contacts/${id}`);
-    } catch (error) {
-      console.error('Failed to update contact:', error);
-      toast.error('Failed to update contact');
-    } finally {
-      setSaving(false);
-    }
-  };
+    toast.success('Contact updated successfully');
+    navigate(`/contacts/${id}`);
+  } catch (error: any) {
+    console.error('Failed to update contact:', error);
+    // Show more specific error message if available
+    const errorMessage = error.response?.data?.message || 'Failed to update contact';
+    toast.error(errorMessage);
+  } finally {
+    setSaving(false);
+  }
+};
 
   const handleRemoveAvatar = async () => {
     if (!window.confirm('Are you sure you want to remove this avatar?')) return;

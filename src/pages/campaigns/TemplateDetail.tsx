@@ -35,7 +35,7 @@ export default function TemplateDetail() {
   const handleDuplicate = async () => {
     try {
       const response = await emailTemplatesApi.duplicateTemplate(Number(templateId));
-      navigate(`/campaigns/templates/${response.data.template.id}`);
+      navigate(`/campaigns/templates/${response.data.data.id}`);
       toast.success('Template duplicated');
     } catch (error) {
       toast.error('Failed to duplicate');

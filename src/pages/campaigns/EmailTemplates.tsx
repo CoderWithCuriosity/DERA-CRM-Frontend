@@ -21,7 +21,7 @@ export default function EmailTemplates() {
   const fetchTemplates = async () => {
     try {
       const response = await emailTemplatesApi.getTemplates();
-      setTemplates(response.data.templates);
+      setTemplates(response.data.data);
     } catch (error) {
       toast.error('Failed to load templates');
     } finally {
@@ -32,7 +32,7 @@ export default function EmailTemplates() {
   const handleDuplicate = async (id: number) => {
     try {
       const response = await emailTemplatesApi.duplicateTemplate(id);
-      setTemplates(prev => [...prev, response.data.template]);
+      setTemplates(prev => [...prev, response.data.data]);
       toast.success('Template duplicated');
     } catch (error) {
       toast.error('Failed to duplicate');

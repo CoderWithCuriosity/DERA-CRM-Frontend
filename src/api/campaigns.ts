@@ -3,30 +3,34 @@ import type { Campaign, CampaignFilters, CreateCampaignData, UpdateCampaignData,
 
 export const campaignsApi = {
   // Campaigns
-  getCampaigns: (filters?: CampaignFilters) => 
+  getCampaigns: (filters?: CampaignFilters) =>
     api.get<CampaignsResponse>('/campaigns', { params: filters }),
 
-  getCampaignById: (id: number) => 
+  getCampaignById: (id: number) =>
     api.get<{ data: CampaignDetailResponse['data'] }>(`/campaigns/${id}`),
 
-  createCampaign: (data: CreateCampaignData) => 
+  createCampaign: (data: CreateCampaignData) =>
     api.post<{ data: { campaign: Campaign } }>('/campaigns', data),
 
-  updateCampaign: (id: number, data: UpdateCampaignData) => 
+  updateCampaign: (id: number, data: UpdateCampaignData) =>
     api.put<{ data: { campaign: Campaign } }>(`/campaigns/${id}`, data),
 
-  sendCampaign: (id: number, sendImmediately: boolean = true) => 
+  sendCampaign: (id: number, sendImmediately: boolean = true) =>
     api.post(`/campaigns/${id}/send`, { send_immediately: sendImmediately }),
 
-  cancelCampaign: (id: number) => 
+  cancelCampaign: (id: number) =>
     api.post(`/campaigns/${id}/cancel`),
 
-  duplicateCampaign: (id: number) => 
-    api.post<{ data: { campaign: Campaign } }>(`/campaigns/${id}/duplicate`),
+  duplicateCampaign: (id: number) =>
+    api.post<{ data: { campaign: Campaign } }>(`/campaigns/${id}/duplicate`, {}, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }),
 
-  sendTestEmail: (id: number, data: TestEmailData) => 
+  sendTestEmail: (id: number, data: TestEmailData) =>
     api.post(`/campaigns/${id}/test`, data),
 
-  getCampaignAnalytics: (id: number) => 
+  getCampaignAnalytics: (id: number) =>
     api.get<{ data: CampaignAnalytics }>(`/campaigns/${id}/analytics`),
 };

@@ -335,7 +335,7 @@ export function TemplateForm({ initialData, isEditing }: TemplateFormProps) {
   const [formData, setFormData] = useState<CreateTemplateData>({
     name: initialData?.name || '',
     subject: initialData?.subject || '',
-    body: initialData?.body || '<p>Start writing your email here...</p>',
+    body: initialData?.body || '',
     variables: initialData?.variables || [],
   });
 
