@@ -25,6 +25,7 @@ import Campaigns from './pages/campaigns/Campaigns';
 import CampaignDetail from './pages/campaigns/CampaignDetail';
 import CreateCampaign from './pages/campaigns/CreateCampaign';
 import EmailTemplates from './pages/campaigns/EmailTemplates';
+import EditTemplate from './pages/campaigns/EditTemplate';
 import Profile from './pages/settings/Profile';
 import Organization from './pages/settings/Organization';
 import Users from './pages/settings/Users';
@@ -101,15 +102,15 @@ function App() {
           </Route>
 
         {/* Campaigns - Static routes BEFORE dynamic :id route */}
-        <Route path="campaigns">
-          <Route index element={<Campaigns />} />
-          <Route path="new" element={<CreateCampaign />} />
-          <Route path="templates" element={<EmailTemplates />} />
-          <Route path="templates/new" element={<TemplateForm />} />
-          <Route path="templates/:templateId" element={<TemplateDetail />} />
-          <Route path="templates/:templateId/edit" element={<TemplateForm isEditing />} />
-          <Route path=":id" element={<CampaignDetail />} />
-        </Route>
+      <Route path="campaigns">
+        <Route index element={<Campaigns />} />
+        <Route path="new" element={<CreateCampaign />} />
+        <Route path="templates" element={<EmailTemplates />} />
+        <Route path="templates/new" element={<TemplateForm />} />
+        <Route path="templates/:templateId" element={<TemplateDetail />} />
+        <Route path="templates/:templateId/edit" element={<EditTemplate />} /> 
+        <Route path=":id" element={<CampaignDetail />} />
+      </Route>
 
           {/* Settings - Profile is accessible to all users */}
           <Route path="settings/profile" element={<Profile />} />

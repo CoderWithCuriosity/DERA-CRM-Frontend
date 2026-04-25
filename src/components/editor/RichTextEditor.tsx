@@ -39,32 +39,51 @@ const FontSize = TextStyle.extend({
 });
 
 // Complete list of variables for suggestions
+// Complete list of variables for suggestions
 const SUGGESTION_VARIABLES = [
+  // Contact Information
   { name: 'first_name', label: 'First Name', category: 'Contact' },
   { name: 'last_name', label: 'Last Name', category: 'Contact' },
   { name: 'full_name', label: 'Full Name', category: 'Contact' },
   { name: 'email', label: 'Email Address', category: 'Contact' },
   { name: 'phone', label: 'Phone Number', category: 'Contact' },
-  { name: 'company', label: 'Company Name', category: 'Contact' },
-  { name: 'job_title', label: 'Job Title', category: 'Contact' },
+  { name: 'contact_company', label: 'Contact\'s Company', category: 'Contact' },
+  { name: 'contact_job_title', label: 'Contact\'s Job Title', category: 'Contact' },
+  { name: 'contact_status', label: 'Contact Status', category: 'Contact' },
   { name: 'city', label: 'City', category: 'Contact' },
   { name: 'state', label: 'State', category: 'Contact' },
   { name: 'country', label: 'Country', category: 'Contact' },
   { name: 'postal_code', label: 'Postal Code', category: 'Contact' },
+  { name: 'name', label: 'Fallback Name', category: 'Contact' },
+  
+  // Campaign Information
   { name: 'campaign_name', label: 'Campaign Name', category: 'Campaign' },
-  { name: 'campaign_description', label: 'Campaign Description', category: 'Campaign' },
+  { name: 'campaign_id', label: 'Campaign ID', category: 'Campaign' },
   { name: 'sent_date', label: 'Sent Date', category: 'Campaign' },
-  { name: 'company_name', label: 'Company Name', category: 'Company' },
-  { name: 'company_email', label: 'Company Email', category: 'Company' },
-  { name: 'company_phone', label: 'Company Phone', category: 'Company' },
-  { name: 'company_website', label: 'Company Website', category: 'Company' },
+  { name: 'sent_time', label: 'Sent Time', category: 'Campaign' },
+  
+  // Sender Company Information (Your Company)
+  { name: 'company_name', label: 'Your Company Name', category: 'Your Company' },
+  { name: 'company_email', label: 'Your Company Email', category: 'Your Company' },
+  { name: 'company_phone', label: 'Your Company Phone', category: 'Your Company' },
+  { name: 'company_website', label: 'Your Company Website', category: 'Your Company' },
+  { name: 'company_address', label: 'Your Company Address', category: 'Your Company' },
+  { name: 'agency_name', label: 'Agency Name', category: 'Your Company' },
+  { name: 'agency_email', label: 'Agency Email', category: 'Your Company' },
+  { name: 'agency_phone', label: 'Agency Phone', category: 'Your Company' },
+  
+  // Agent Information
+  { name: 'agent_name', label: 'Agent Name', category: 'Agent' },
+  { name: 'agent_email', label: 'Agent Email', category: 'Agent' },
+  
+  // System Links
   { name: 'unsubscribe_link', label: 'Unsubscribe Link', category: 'Links' },
-  { name: 'preferences_link', label: 'Preferences Link', category: 'Links' },
-  { name: 'view_online_link', label: 'View Online Link', category: 'Links' },
+  { name: 'tracking_pixel', label: 'Tracking Pixel', category: 'Links' },
+  
+  // System Variables
   { name: 'current_year', label: 'Current Year', category: 'System' },
-  { name: 'current_month', label: 'Current Month', category: 'System' },
   { name: 'current_date', label: 'Current Date', category: 'System' },
-  { name: 'support_email', label: 'Support Email', category: 'System' },
+  { name: 'current_time', label: 'Current Time', category: 'System' },
 ];
 
 interface RichTextEditorProps {

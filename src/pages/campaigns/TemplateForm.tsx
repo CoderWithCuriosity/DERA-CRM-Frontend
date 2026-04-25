@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Eye, Search, ChevronDown, ChevronRight, X, Variable } from 'lucide-react';
 import { GlassCard } from '../../components/ui/GlassCard';
@@ -23,42 +23,43 @@ const VALID_VARIABLES = {
     { name: 'full_name', description: 'Recipient full name', demoValue: 'John Doe' },
     { name: 'email', description: 'Recipient email address', demoValue: 'john.doe@example.com' },
     { name: 'phone', description: 'Recipient phone number', demoValue: '+1 (555) 123-4567' },
-    { name: 'company', description: 'Recipient company name', demoValue: 'Acme Corporation' },
-    { name: 'job_title', description: 'Recipient job title', demoValue: 'Marketing Director' },
+    { name: 'contact_company', description: 'Recipient\'s company name', demoValue: 'Acme Corporation' },
+    { name: 'contact_job_title', description: 'Recipient\'s job title', demoValue: 'Marketing Director' },
+    { name: 'contact_status', description: 'Recipient status', demoValue: 'active' },
     { name: 'city', description: 'Recipient city', demoValue: 'New York' },
     { name: 'state', description: 'Recipient state', demoValue: 'NY' },
     { name: 'country', description: 'Recipient country', demoValue: 'USA' },
     { name: 'postal_code', description: 'Recipient postal code', demoValue: '10001' },
+    { name: 'name', description: 'Fallback name (full name or "Valued Customer")', demoValue: 'John Doe' },
   ],
   campaign: [
     { name: 'campaign_name', description: 'Campaign name', demoValue: 'Summer Sale 2024' },
-    { name: 'campaign_description', description: 'Campaign description', demoValue: 'Exclusive summer discounts' },
+    { name: 'campaign_id', description: 'Campaign ID', demoValue: '12345' },
     { name: 'sent_date', description: 'Date email was sent', demoValue: new Date().toLocaleDateString() },
-    { name: 'open_rate', description: 'Campaign open rate', demoValue: '45%' },
-    { name: 'click_rate', description: 'Campaign click rate', demoValue: '12%' },
+    { name: 'sent_time', description: 'Time email was sent', demoValue: new Date().toLocaleTimeString() },
   ],
-  company: [
+  sender_company: [
     { name: 'company_name', description: 'Your company name', demoValue: 'DERA CRM' },
     { name: 'company_email', description: 'Company support email', demoValue: 'support@deracrm.com' },
     { name: 'company_phone', description: 'Company phone number', demoValue: '+1 (555) 000-0000' },
     { name: 'company_website', description: 'Company website URL', demoValue: 'https://deracrm.com' },
     { name: 'company_address', description: 'Company address', demoValue: '123 Business Ave, Suite 100' },
-    { name: 'company_city', description: 'Company city', demoValue: 'San Francisco' },
-    { name: 'company_state', description: 'Company state', demoValue: 'CA' },
-    { name: 'company_country', description: 'Company country', demoValue: 'USA' },
+    { name: 'agency_name', description: 'Agency/Company name', demoValue: 'DERA CRM' },
+    { name: 'agency_email', description: 'Agency email', demoValue: 'support@deracrm.com' },
+    { name: 'agency_phone', description: 'Agency phone', demoValue: '+1 (555) 000-0000' },
+  ],
+  agent: [
+    { name: 'agent_name', description: 'Agent full name (who created campaign)', demoValue: 'Sarah Johnson' },
+    { name: 'agent_email', description: 'Agent email', demoValue: 'sarah@deracrm.com' },
   ],
   links: [
     { name: 'unsubscribe_link', description: 'Unsubscribe URL', demoValue: 'https://deracrm.com/unsubscribe' },
-    { name: 'preferences_link', description: 'Email preferences URL', demoValue: 'https://deracrm.com/preferences' },
-    { name: 'view_online_link', description: 'View in browser link', demoValue: 'https://deracrm.com/email/view' },
     { name: 'tracking_pixel', description: 'Open tracking pixel', demoValue: '[Tracking Pixel]' },
   ],
   system: [
     { name: 'current_year', description: 'Current year', demoValue: new Date().getFullYear().toString() },
-    { name: 'current_month', description: 'Current month', demoValue: new Date().toLocaleString('default', { month: 'long' }) },
     { name: 'current_date', description: 'Current date', demoValue: new Date().toLocaleDateString() },
-    { name: 'support_email', description: 'Support email', demoValue: 'help@deracrm.com' },
-    { name: 'support_phone', description: 'Support phone', demoValue: '+1 (555) 999-9999' },
+    { name: 'current_time', description: 'Current time', demoValue: new Date().toLocaleTimeString() },
   ]
 };
 
@@ -72,11 +73,12 @@ interface CategoryConfig {
 }
 
 const categories: CategoryConfig[] = [
-  { key: 'contact', label: 'Contact Information', description: 'Personalize emails with recipient details', icon: 'Contact' },
-  { key: 'campaign', label: 'Campaign Details', description: 'Campaign-specific information', icon: 'Campaign' },
-  { key: 'company', label: 'Company Information', description: 'Your business information', icon: 'Company' },
-  { key: 'links', label: 'System Links', description: 'Dynamic links and tracking', icon: 'Links' },
-  { key: 'system', label: 'System Variables', description: 'System-wide information', icon: 'System' },
+  { key: 'contact', label: 'Contact Information', description: 'Personalize emails with recipient details', icon: '👤' },
+  { key: 'campaign', label: 'Campaign Details', description: 'Campaign-specific information', icon: '📢' },
+  { key: 'sender_company', label: 'Your Company Information', description: 'Your business branding and contact info', icon: '🏢' },
+  { key: 'agent', label: 'Agent Information', description: 'The agent who created the campaign', icon: '👨‍💼' },
+  { key: 'links', label: 'System Links', description: 'Dynamic links and tracking', icon: '🔗' },
+  { key: 'system', label: 'System Variables', description: 'System-wide information', icon: '⚙️' },
 ];
 
 // Function to get demo value for a variable
@@ -165,7 +167,7 @@ function VariableModal({ isOpen, onClose, onInsertVariable }: {
   onInsertVariable: (variableName: string) => void;
 }) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [expandedCategories, setExpandedCategories] = useState<CategoryKey[]>(['contact', 'campaign', 'company', 'links', 'system']);
+  const [expandedCategories, setExpandedCategories] = useState<CategoryKey[]>(['contact', 'campaign', 'sender_company', 'agent', 'links', 'system']);
 
   const toggleCategory = (categoryKey: CategoryKey) => {
     setExpandedCategories(prev => 
@@ -244,7 +246,7 @@ function VariableModal({ isOpen, onClose, onInsertVariable }: {
                       <code className="text-sm font-mono text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
                         {"{{"}{variable.name}{"}}"}
                       </code>
-                      <span className="text-xs text-gray-400 capitalize">{category}</span>
+                      <span className="text-xs text-gray-400 capitalize">{category.replace('_', ' ')}</span>
                     </div>
                     <p className="text-xs text-gray-600">{variable.description}</p>
                     <p className="text-xs text-gray-400 mt-1">Example: {variable.demoValue}</p>
@@ -265,7 +267,7 @@ function VariableModal({ isOpen, onClose, onInsertVariable }: {
                       className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors"
                     >
                       <div className="flex items-center gap-3">
-                        <span className="text-sm font-medium text-gray-600 w-16">{category.icon}</span>
+                        <span className="text-xl">{category.icon}</span>
                         <div className="text-left">
                           <h3 className="font-semibold text-deep-ink">{category.label}</h3>
                           <p className="text-xs text-gray-500">{category.description}</p>
@@ -338,6 +340,17 @@ export function TemplateForm({ initialData, isEditing }: TemplateFormProps) {
     body: initialData?.body || '',
     variables: initialData?.variables || [],
   });
+
+    useEffect(() => {
+    if (initialData) {
+      setFormData({
+        name: initialData.name,
+        subject: initialData.subject,
+        body: initialData.body,
+        variables: initialData.variables || [],
+      });
+    }
+  }, [initialData]);
 
   const handleInsertVariable = (variableName: string) => {
     // Dispatch custom event for the rich text editor to handle
