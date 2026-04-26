@@ -7,6 +7,9 @@ import type {
   BackupStatusResponse,
   SystemHealthResponse,
   SystemStatsResponse,
+  AuditLogDetailResponse,
+  EntityChangeHistory,
+  AuditLogSummaryResponse,
 } from '../types/admin';
 
 export const adminApi = {
@@ -20,6 +23,28 @@ export const adminApi = {
    */
   getAuditLogs: (filters?: AuditLogFilters) =>
     api.get<AuditLogsResponse>('/admin/audit-logs', { params: filters }),
+
+  /**
+   * Get detailed audit log by ID (NEW)
+   */
+  getAuditLogDetail: (id: number) =>
+    api.get<AuditLogDetailResponse>(`/admin/audit-logs/${id}/detail`),
+
+  /**
+   * Get entity change history (NEW)
+   */
+  getEntityChangeHistory: (entityType: string, entityId: number, page?: number, limit?: number) =>
+    api.get<EntityChangeHistory>(`/admin/audit-logs/entity/${entityType}/${entityId}`, {
+      params: { page, limit },
+    }),
+
+  /**
+   * Get audit log summary (NEW)
+   */
+  getAuditLogSummary: (days?: number, entityType?: string) =>
+    api.get<AuditLogSummaryResponse>('/admin/audit-logs/summary', {
+      params: { days, entity_type: entityType },
+    }),
 
   /**
    * Get user activity report

@@ -55,7 +55,7 @@ function App() {
         } />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="//verify-email-sent" element={<VerifyEmailSent />} />
+        <Route path="/verify-email-sent" element={<VerifyEmailSent />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/request-verification" element={<RequestVerification />} />
 
@@ -101,16 +101,16 @@ function App() {
             <Route path=":id/edit" element={<CreateActivity />} />
           </Route>
 
-        {/* Campaigns - Static routes BEFORE dynamic :id route */}
-      <Route path="campaigns">
-        <Route index element={<Campaigns />} />
-        <Route path="new" element={<CreateCampaign />} />
-        <Route path="templates" element={<EmailTemplates />} />
-        <Route path="templates/new" element={<TemplateForm />} />
-        <Route path="templates/:templateId" element={<TemplateDetail />} />
-        <Route path="templates/:templateId/edit" element={<EditTemplate />} /> 
-        <Route path=":id" element={<CampaignDetail />} />
-      </Route>
+          {/* Campaigns - Static routes BEFORE dynamic :id route */}
+          <Route path="campaigns">
+            <Route index element={<Campaigns />} />
+            <Route path="new" element={<CreateCampaign />} />
+            <Route path="templates" element={<EmailTemplates />} />
+            <Route path="templates/new" element={<TemplateForm />} />
+            <Route path="templates/:templateId" element={<TemplateDetail />} />
+            <Route path="templates/:templateId/edit" element={<EditTemplate />} />
+            <Route path=":id" element={<CampaignDetail />} />
+          </Route>
 
           {/* Settings - Profile is accessible to all users */}
           <Route path="settings/profile" element={<Profile />} />
