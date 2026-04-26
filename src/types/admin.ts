@@ -130,7 +130,7 @@ export interface SystemStatsResponse {
 export interface AuditLogsResponse {
   success: boolean;
   data: {
-    logs: AuditLog[];
+    data: AuditLog[];
     pagination: {
       total: number;
       page: number;

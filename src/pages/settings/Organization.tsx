@@ -27,6 +27,7 @@ export default function Organization() {
   const toast = useToast();
   const [loading, setLoading] = useState(false);
   const [org, setOrg] = useState<any>(null);
+  const server_api_url = import.meta.env.VITE_API_URL || '';
 
   const {
     register,
@@ -85,7 +86,7 @@ export default function Organization() {
           <div className="relative">
             <div className="w-24 h-24 rounded-xl bg-linear-to-br from-primary to-accent flex items-center justify-center text-white text-2xl font-bold overflow-hidden">
               {org?.company_logo ? (
-                <img src={org.company_logo} alt="logo" className="w-full h-full object-cover" />
+                <img src={server_api_url.replace(/\/api$/, '') + org.company_logo} alt="logo" className="w-full h-full object-cover" />
               ) : (
                 <span>{org?.company_name?.[0]}</span>
               )}

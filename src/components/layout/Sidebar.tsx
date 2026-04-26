@@ -36,7 +36,6 @@ export function Sidebar() {
   const [collapsed, setCollapsed] = useState(true);
   const location = useLocation();
   const { user, logout } = useAuth();
-  const server_api_url = import.meta.env.VITE_API_URL || '';
 
   // Define all navigation items with their role requirements
   const navigationItems: NavItem[] = [
@@ -200,7 +199,7 @@ export function Sidebar() {
           <div className="w-10 h-10 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center">
             {user?.avatar ? (
               <img 
-                src={server_api_url.replace(/\/api$/, '') + user.avatar} 
+                src={user.avatar} 
                 alt={`${user.first_name} ${user.last_name}`}
                 className="w-full h-full rounded-full object-cover"
               />

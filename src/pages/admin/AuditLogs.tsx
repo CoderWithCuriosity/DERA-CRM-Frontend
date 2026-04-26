@@ -19,7 +19,7 @@ export default function AuditLogs() {
   const fetchLogs = async () => {
     try {
       const response = await adminApi.getAuditLogs();
-      setLogs(response?.data?.logs || []);
+      setLogs(response?.data?.data || []);
     } catch (error) {
       console.error('Failed to load audit logs');
       setLogs([]); // Ensure logs is always an array

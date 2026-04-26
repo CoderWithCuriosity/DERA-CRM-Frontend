@@ -113,12 +113,6 @@ export default function Users() {
 
   // Check if current user is admin
   const isAdmin = currentUser?.role === 'admin';
-  
-  // Debug logging to see what's happening
-  console.log('Current user:', currentUser);
-  console.log('Is Admin:', isAdmin);
-  console.log('Is Impersonating:', isImpersonating);
-  console.log('Users list:', users);
 
   return (
     <div className="space-y-6">

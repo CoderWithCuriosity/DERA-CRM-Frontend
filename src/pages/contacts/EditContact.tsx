@@ -151,9 +151,6 @@ const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
   try {
     setSaving(true);
     
-    // Log what we're sending for debugging
-    console.log('Updating contact with data:', formData);
-    
     // Update contact - make sure email is included
     const updateData = {
       first_name: formData.first_name,
@@ -170,8 +167,7 @@ const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
     
     const response = await contactsApi.updateContact(Number(id), updateData);
     
-    // Log the response
-    console.log('Update response:', response);
+    void response;
 
     // Upload new avatar if selected
     if (avatarFile) {
