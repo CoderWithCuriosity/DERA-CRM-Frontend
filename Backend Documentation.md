@@ -31,6 +31,26 @@ Looking at your initial documentation and comparing it with the complete codebas
 2. **WebSockets** - Using polling instead for real-time updates
 3. **Social Login** - Not included in this version
 
+
+## User Impersonation
+
+### Overview
+The User Impersonation feature allows administrators to temporarily log in and act as another user (agent or manager) without needing their password. This is useful for:
+- Debugging user-specific issues
+- Providing training and support
+- Auditing user permissions and access
+- Testing workflows from different user perspectives
+
+### Security Features
+- ✅ **Admin Only**: Only users with `admin` role can impersonate others
+- ✅ **No Admin Impersonation**: Cannot impersonate other administrators
+- ✅ **Audit Trail**: All impersonations are logged with admin details
+- ✅ **Short Sessions**: Impersonation tokens expire in 2 hours
+- ✅ **Session Tracking**: All actions during impersonation are tracked
+
+### Impersonation Flow
+
+
 ## 📋 Complete Updated Documentation
 
 ```markdown
@@ -42,6 +62,7 @@ Looking at your initial documentation and comparing it with the complete codebas
 3. [Endpoints](#endpoints)
    - [Authentication](#authentication-endpoints)
    - [Users & Profile](#users--profile-endpoints)
+   - [Users Impersonation](#user-impersonation-endpoints)
    - [Organization](#organization-endpoints)
    - [Contacts](#contacts-endpoints)
    - [Deals & Sales Pipeline](#deals--sales-pipeline-endpoints)
@@ -584,6 +605,79 @@ avatar: [image file] (max 2MB, formats: jpg, jpeg, png, gif)
   "message": "User deleted successfully"
 }
 ```
+
+
+### Impersonation Endpoints
+
+#### 1. Impersonate a User
+**POST** `/users/:id/impersonate`
+
+Initiates an impersonation session as the specified user.
+
+**Headers:** `Authorization: Bearer <token>`  
+**Access:** Admin only
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Now impersonating Sarah Johnson",
+  "data": {
+    "user": {
+      "id": 101,
+      "email": "sarah.johnson@example.com",
+      "first_name": "Sarah",
+      "last_name": "Johnson",
+      "role": "agent",
+      "avatar": "/uploads/avatars/avatar-1705316400000.jpg",
+      "is_verified": true,
+      "organization_id": 1,
+      "created_at": "2025-11-01T10:00:00.000Z",
+      "updated_at": "2025-11-08T15:30:00.000Z"
+    },
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "isImpersonating": true,
+    "impersonatedBy": {
+      "id": 1,
+      "name": "John Doe",
+      "email": "admin@example.com"
+    }
+  }
+}
+```
+
+#### 2. Stop Impersonating
+**POST** `/users/stop-impersonating`
+
+Ends the current impersonation session and returns to the original admin account.
+
+**Headers:** `Authorization: Bearer <token>`  
+**Access:** Admin only
+
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Stopped impersonating. Returned to admin account.",
+  "data": {
+    "user": {
+      "id": 1,
+      "email": "admin@example.com",
+      "first_name": "John",
+      "last_name": "Doe",
+      "role": "admin",
+      "avatar": "/uploads/avatars/admin-avatar.jpg",
+      "is_verified": true,
+      "organization_id": 1,
+      "created_at": "2025-11-01T09:00:00.000Z",
+      "updated_at": "2025-11-08T16:00:00.000Z"
+    },
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "isImpersonating": false
+  }
+}
+```
+
 
 ### Organization Endpoints
 
@@ -2719,6 +2813,21 @@ All ticket operations are logged to the `AuditLog` table:
 | VIEW | ticket | "Viewed ticket: TKT-2025-0001" |
 | DELETE | ticket | "Deleted ticket: TKT-2025-0001" |
 
+### Sample Audit Log Entry:
+```json
+{
+  "id": 5001,
+  "user_id": 1,
+  "action": "IMPERSONATE",
+  "entity_type": "user",
+  "entity_id": 101,
+  "details": "Admin john@example.com impersonated user sarah@example.com",
+  "ip_address": "192.168.1.100",
+  "user_agent": "Mozilla/5.0...",
+  "created_at": "2025-11-08T16:30:00.000Z"
+}
+```
+
 ---
 
 ## Implementation Notes
@@ -3975,7 +4084,7 @@ curl https://api.deracrm.com/health
 ### ✅ **Added Features:**
 1. **Organization Management** - Complete company settings
 2. **SLA Tracking** - Response and resolution time monitoring
-3. **Audit Logging** - Full audit trail for compliance
+3. **Audit Logging** - Full audit trail for compliance (Every action is audited)
 4. **Backup System** - Automated database backups
 5. **Campaign Analytics** - Detailed email campaign metrics
 6. **Tag Management** - Comprehensive tagging system
