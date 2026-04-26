@@ -78,7 +78,7 @@ export default function Profile() {
         // Type-safe update with proper User type
         const updatedUser: User = {
           ...user,
-          avatar: response.data.avatar
+          avatar: import.meta.env.VITE_API_URL.replace(/\/api$/, '') + response.data.avatar
         };
         setUser(updatedUser);
         toast.success('Avatar uploaded successfully');

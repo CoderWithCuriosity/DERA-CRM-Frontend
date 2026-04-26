@@ -34,7 +34,7 @@
   --color-border: #e5e7eb;
 
   /* Font family */
-  --font-sans: 'Inter Variable', 'Geist Sans', system-ui, sans-serif;
+  --font-sans: "Poppins", system-ui, sans-serif;  
 }
 
 @layer base {
@@ -137,4 +137,15 @@
     opacity: 0.2;
     transform: scale(1);
   }
+}
+
+
+/* width of scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+/* background (track) */
+::-webkit-scrollbar-track {
+  background: #001a40; /* dark */
 }

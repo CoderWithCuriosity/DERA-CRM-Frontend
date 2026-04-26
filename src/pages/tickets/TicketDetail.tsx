@@ -27,6 +27,8 @@ export default function TicketDetail() {
   const [searchTerm, setSearchTerm] = useState('');
   const [assigning, setAssigning] = useState(false);
 
+  void user;
+
   useEffect(() => {
     if (id) fetchData();
     if (showAssignModal) fetchUsers();
@@ -121,6 +123,7 @@ export default function TicketDetail() {
     resolved: 'bg-green-100 text-green-800',
     closed: 'bg-gray-100 text-gray-800',
   };
+  void statusColors;
 
   return (
     <div className="space-y-6">

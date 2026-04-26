@@ -33,9 +33,10 @@ interface NavItem {
 }
 
 export function Sidebar() {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const location = useLocation();
   const { user, logout } = useAuth();
+  const server_api_url = import.meta.env.VITE_API_URL || '';
 
   // Define all navigation items with their role requirements
   const navigationItems: NavItem[] = [
@@ -148,7 +149,7 @@ export function Sidebar() {
   return (
     <motion.aside
       initial={false}
-      animate={{ width: collapsed ? 80 : 280 }}
+      animate={{ width: collapsed ? 80 : 240 }}
       className="h-screen bg-deep-ink text-white relative flex flex-col"
     >
       {/* Logo */}
@@ -195,11 +196,11 @@ export function Sidebar() {
 
       {/* User Profile */}
       <div className="border-t border-blue-800/30 p-4">
-        <div className="flex items-center space-x-3">
+        <div className="flex flex-col justify-center items-center space-x-3">
           <div className="w-10 h-10 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center">
             {user?.avatar ? (
               <img 
-                src={user.avatar} 
+                src={server_api_url.replace(/\/api$/, '') + user.avatar} 
                 alt={`${user.first_name} ${user.last_name}`}
                 className="w-full h-full rounded-full object-cover"
               />

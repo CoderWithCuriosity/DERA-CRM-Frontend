@@ -1,5 +1,5 @@
 import { api } from './client';
-import type { User, UpdateProfileData, ChangePasswordData, UserFilters, UsersResponse } from '../types/user';
+import type { User, UpdateProfileData, ChangePasswordData, UserFilters, UsersResponse, ImpersonationResponse, StopImpersonationResponse } from '../types/user';
 
 export const usersApi = {
   getProfile: () => 
@@ -33,4 +33,19 @@ export const usersApi = {
 
   deleteUser: (id: number) => 
     api.delete(`/users/${id}`),
+
+
+  impersonateUser: (id: number) => 
+    api.post<ImpersonationResponse>(`/users/${id}/impersonate`, {}, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }),
+
+  stopImpersonating: () => 
+    api.post<StopImpersonationResponse>('/users/stop-impersonating', {}, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }),
 };

@@ -86,4 +86,29 @@ export interface AuthResponse {
   };
 }
 
+export interface ImpersonationResponse {
+  success: boolean;
+  message: string;
+  data: {
+    user: User;
+    token: string;
+    isImpersonating: boolean;
+    impersonatedBy: {
+      id: number;
+      name: string;
+      email: string;
+    };
+  };
+}
+
+export interface StopImpersonationResponse {
+  success: boolean;
+  message: string;
+  data: {
+    user: User;
+    token: string;
+    isImpersonating: false;
+  };
+}
+
 export type UsersResponse = PaginatedResponse<User>;
