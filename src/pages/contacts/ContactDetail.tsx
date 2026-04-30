@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Mail, Phone, Building, Calendar, Edit, Trash2, Plus, Activity, Ticket, Briefcase, X, Save, Send, CheckCircle, AlertCircle, Clock, User, DollarSign } from 'lucide-react';
+import { ArrowLeft, Mail, Phone, Building, Calendar, Edit, Trash2, Plus, Activity, Ticket, Briefcase, X, Save, Send, DollarSign } from 'lucide-react';
 import { GlassCard } from '../../components/ui/GlassCard';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
@@ -18,6 +18,8 @@ import { formatDate, formatPhone } from '../../utils/formatters';
 import { useToast } from '../../hooks/useToast';
 import { useAuth } from '../../hooks/useAuth';
 import { AvatarUpload } from '../../components/contacts/AvatarUpload';
+import ContactAttachments from '../../components/contacts/ContactAttachments';
+import { attachmentsApi } from '../../api/attachments';
 
 type QuickActionType = 'activity' | 'ticket' | 'deal' | null;
 
@@ -55,8 +57,22 @@ export default function ContactDetail() {
   const [tickets, setTickets] = useState<any[]>([]);
   const [activities, setActivities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'details' | 'deals' | 'tickets' | 'activities'>('details');
+  const [activeTab, setActiveTab] = useState<'details' | 'deals' | 'tickets' | 'activities' | 'attachments'>('details');
   const [avatar, setAvatar] = useState<string | null>(null);
+  const [attachmentCount, setAttachmentCount] = useState(0);
+
+
+  const getAttachmentCount = async () => {
+    if (!id) return;
+    try {
+      const response = await attachmentsApi.getAttachments(Number(id));
+      if (response.success) {
+        setAttachmentCount(response.data.attachments.length);
+      }
+    } catch (error) {
+      console.error('Failed to fetch attachment count:', error);
+    }
+  };
   
   // Quick action states
   const [quickAction, setQuickAction] = useState<QuickActionType>(null);
@@ -108,6 +124,7 @@ export default function ContactDetail() {
         setDeals(contactData.deals || []);
         setTickets(contactData.tickets || []);
         setActivities(contactData.activities || []);
+        await getAttachmentCount();
       } else {
         console.error('Unexpected response structure:', response.data);
         toast.error('Invalid response format');
@@ -406,7 +423,7 @@ export default function ContactDetail() {
       {/* Tabs for related data */}
       <div className="border-b border-blue-100">
         <nav className="flex space-x-8">
-          {(['details', 'deals', 'tickets', 'activities'] as const).map(tab => (
+          {(['details', 'deals', 'tickets', 'activities', 'attachments'] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -418,7 +435,7 @@ export default function ContactDetail() {
             >
               {tab} {tab !== 'details' && (
                 <span className="ml-2 text-xs bg-gray-100 px-2 py-1 rounded-full">
-                  {tab === 'deals' ? deals.length : tab === 'tickets' ? tickets.length : activities.length}
+                  {tab === 'deals' ? deals.length : tab === 'tickets' ? tickets.length : tab === 'activities' ? activities.length : attachmentCount }
                 </span>
               )}
             </button>
@@ -551,6 +568,10 @@ export default function ContactDetail() {
               </div>
             )}
           </div>
+        )}
+
+        {activeTab === 'attachments' && (
+          <ContactAttachments contactId={contact.id} contactName={contactFullName} />
         )}
       </GlassCard>
 

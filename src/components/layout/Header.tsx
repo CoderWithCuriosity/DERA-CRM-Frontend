@@ -1,22 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Search, 
-  Bell, 
-  Menu, 
-  User, 
-  Settings, 
+import {
+  Search,
+  Bell,
+  Menu,
+  User,
+  Settings,
   LogOut,
   ChevronDown,
-  Mail,
   Calendar,
-  Ticket
+  Ticket,
+  CheckCircle,
+  Target,
+  MessageSquare
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { GlassCard } from '../ui/GlassCard';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
+import { notificationsApi } from '../../api/notifications';
+import { messagesApi } from '../../api/messages';
+import type { Notification as NotificationType } from '../../types/notification';
+import { formatDate } from '../../utils/formatters';
 
 export function Header() {
   const { user, logout } = useAuth();
@@ -24,14 +30,12 @@ export function Header() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [notificationCount, setNotificationCount] = useState(0);
+  const [messageCount, setMessageCount] = useState(0);
+  const [notifications, setNotifications] = useState<NotificationType[]>([]);
+  const [markingAll, setMarkingAll] = useState(false);
 
-  const notifications = [
-    { id: 1, type: 'ticket', message: 'New ticket assigned to you', time: '5 min ago', read: false },
-    { id: 2, type: 'deal', message: 'Deal "Enterprise Plan" was won!', time: '1 hour ago', read: false },
-    { id: 3, type: 'activity', message: 'Meeting with Sarah in 30 minutes', time: '2 hours ago', read: true },
-  ];
-
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const totalUnreadCount = notificationCount + messageCount;
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,17 +45,119 @@ export function Header() {
     }
   };
 
+  const fetchCounts = async () => {
+    try {
+      const [notificationsRes, messagesRes] = await Promise.all([
+        notificationsApi.getNotifications({ limit: 1, unread_only: true }),
+        messagesApi.getUnreadCount()
+      ]);
+      setNotificationCount(notificationsRes.data.unread_count);
+      setMessageCount(messagesRes.data.unread_count);
+    } catch (error) {
+      console.error('Failed to fetch counts:', error);
+    }
+  };
+
+  const fetchNotifications = async () => {
+    try {
+      const response = await notificationsApi.getNotifications({ limit: 5 });
+      setNotifications(response.data.data);
+    } catch (error) {
+      console.error('Failed to fetch notifications:', error);
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    setMarkingAll(true);
+    try {
+      await notificationsApi.markAllAsRead();
+      await fetchCounts();
+      await fetchNotifications();
+    } catch (error) {
+      console.error('Failed to mark all as read:', error);
+    } finally {
+      setMarkingAll(false);
+    }
+  };
+
+  const handleMarkAsRead = async (id: number) => {
+    try {
+      await notificationsApi.markAsRead(id);
+      setNotifications(prev => 
+        prev.map(n => n.id === id ? { ...n, read_at: new Date().toISOString(), is_read: true } : n)
+      );
+      setNotificationCount(prev => Math.max(0, prev - 1));
+    } catch (error) {
+      console.error('Failed to mark as read:', error);
+    }
+  };
+
+  const handleNotificationClick = (notification: NotificationType) => {
+    if (!notification.read_at) {
+      handleMarkAsRead(notification.id);
+    }
+    
+    if (notification.data?.url) {
+      navigate(notification.data.url);
+    } else if (notification.data?.ticket_id) {
+      navigate(`/tickets/${notification.data.ticket_id}`);
+    } else if (notification.data?.deal_id) {
+      navigate(`/deals/${notification.data.deal_id}`);
+    } else if (notification.data?.activity_id) {
+      navigate(`/activities/${notification.data.activity_id}`);
+    } else if (notification.data?.message_id) {
+      navigate('/messages');
+    }
+    setShowNotifications(false);
+  };
+
+  const handleViewAllNotifications = () => {
+    setShowNotifications(false);
+    navigate('/notifications');
+  };
+
+  const getNotificationIcon = (type: string) => {
+    if (type.includes('ticket')) return <Ticket size={14} />;
+    if (type.includes('deal')) return <Target size={14} />;
+    if (type.includes('message')) return <MessageSquare size={14} />;
+    if (type.includes('activity')) return <Calendar size={14} />;
+    if (type.includes('completed') || type.includes('success')) return <CheckCircle size={14} />;
+    return <Bell size={14} />;
+  };
+
+  const getNotificationBg = (type: string) => {
+    if (type.includes('ticket')) return 'bg-orange-100 text-orange-600';
+    if (type.includes('deal')) return 'bg-green-100 text-green-600';
+    if (type.includes('message')) return 'bg-blue-100 text-blue-600';
+    if (type.includes('activity')) return 'bg-purple-100 text-purple-600';
+    if (type.includes('warning') || type.includes('breach')) return 'bg-red-100 text-red-600';
+    if (type.includes('completed')) return 'bg-teal-100 text-teal-600';
+    return 'bg-gray-100 text-gray-600';
+  };
+
+  useEffect(() => {
+    fetchCounts();
+    const interval = setInterval(fetchCounts, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (showNotifications) {
+      fetchNotifications();
+    }
+  }, [showNotifications]);
+
   return (
     <header className="bg-white/70 backdrop-blur-md border-b border-blue-100/50 px-6 py-3">
       <div className="flex items-center justify-between">
-        {/* Left section - could include mobile menu toggle if needed */}
+        {/* Left section - mobile menu toggle */}
         <div className="flex items-center lg:hidden">
           <Button variant="ghost" size="sm">
             <Menu size={20} />
           </Button>
         </div>
 
-        {/* Search bar - hidden on mobile, visible on md and up */}
+        {/* Search bar */}
         <div className="hidden md:block flex-1 max-w-md">
           <form onSubmit={handleSearch}>
             <Input
@@ -73,9 +179,9 @@ export function Header() {
               className="relative p-2 text-gray-600 hover:text-primary hover:bg-blue-50 rounded-lg transition-colors"
             >
               <Bell size={20} />
-              {unreadCount > 0 && (
-                <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-xs flex items-center justify-center rounded-full">
-                  {unreadCount}
+              {totalUnreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs flex items-center justify-center rounded-full">
+                  {totalUnreadCount > 9 ? '9+' : totalUnreadCount}
                 </span>
               )}
             </button>
@@ -86,14 +192,18 @@ export function Header() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 10 }}
-                  className="absolute right-0 mt-2 w-80 z-50"
+                  className="absolute right-0 mt-2 w-96 z-50"
                 >
                   <GlassCard className="p-4" intensity="heavy">
                     <div className="flex items-center justify-between mb-3">
                       <h3 className="font-semibold text-deep-ink">Notifications</h3>
-                      {unreadCount > 0 && (
-                        <button className="text-xs text-primary hover:text-primary-600">
-                          Mark all as read
+                      {notificationCount > 0 && (
+                        <button
+                          onClick={handleMarkAllAsRead}
+                          disabled={markingAll}
+                          className="text-xs text-primary hover:text-primary-600 transition-colors"
+                        >
+                          {markingAll ? 'Marking...' : 'Mark all as read'}
                         </button>
                       )}
                     </div>
@@ -102,36 +212,39 @@ export function Header() {
                         notifications.map((notif) => (
                           <div
                             key={notif.id}
-                            className={`p-3 rounded-lg transition-colors ${
-                              notif.read ? 'bg-transparent' : 'bg-blue-50/50'
-                            } hover:bg-blue-100/50 cursor-pointer`}
+                            onClick={() => handleNotificationClick(notif)}
+                            className={`p-3 rounded-lg transition-colors cursor-pointer ${
+                              !notif.read_at ? 'bg-blue-50/50' : 'bg-transparent'
+                            } hover:bg-blue-100/50`}
                           >
                             <div className="flex items-start space-x-3">
-                              <div className={`p-1.5 rounded-lg ${
-                                notif.type === 'ticket' ? 'bg-orange-100 text-orange-600' :
-                                notif.type === 'deal' ? 'bg-green-100 text-green-600' :
-                                'bg-purple-100 text-purple-600'
-                              }`}>
-                                {notif.type === 'ticket' ? <Ticket size={14} /> :
-                                 notif.type === 'deal' ? <Mail size={14} /> :
-                                 <Calendar size={14} />}
+                              <div className={`p-1.5 rounded-lg shrink-0 ${getNotificationBg(notif.type)}`}>
+                                {getNotificationIcon(notif.type)}
                               </div>
-                              <div className="flex-1">
-                                <p className="text-sm text-deep-ink">{notif.message}</p>
-                                <p className="text-xs text-gray-500 mt-1">{notif.time}</p>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-deep-ink truncate">{notif.title}</p>
+                                <p className="text-xs text-gray-600 mt-0.5 line-clamp-2">{notif.body}</p>
+                                <p className="text-xs text-gray-400 mt-1">{formatDate(notif.created_at)}</p>
                               </div>
-                              {!notif.read && (
-                                <div className="w-2 h-2 bg-primary rounded-full"></div>
+                              {!notif.read_at && (
+                                <div className="w-2 h-2 bg-primary rounded-full shrink-0 mt-2"></div>
                               )}
                             </div>
                           </div>
                         ))
                       ) : (
-                        <p className="text-sm text-gray-500 text-center py-4">No notifications</p>
+                        <div className="text-center py-8">
+                          <Bell size={32} className="mx-auto text-gray-300 mb-2" />
+                          <p className="text-sm text-gray-500">No notifications</p>
+                          <p className="text-xs text-gray-400">You're all caught up!</p>
+                        </div>
                       )}
                     </div>
                     <div className="mt-3 pt-3 border-t border-blue-100">
-                      <button className="text-sm text-primary hover:text-primary-600 w-full text-center">
+                      <button
+                        onClick={handleViewAllNotifications}
+                        className="text-sm text-primary hover:text-primary-600 w-full text-center transition-colors"
+                      >
                         View all notifications
                       </button>
                     </div>
@@ -203,7 +316,7 @@ export function Header() {
         </div>
       </div>
 
-      {/* Mobile search - visible only on small screens */}
+      {/* Mobile search */}
       <div className="mt-3 md:hidden">
         <form onSubmit={handleSearch}>
           <Input

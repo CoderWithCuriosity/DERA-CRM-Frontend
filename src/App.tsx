@@ -10,6 +10,9 @@ import { Dashboard } from './pages/dashboard/Dashboard';
 import { Contacts } from './pages/contacts/Contacts';
 import ContactDetail from './pages/contacts/ContactDetail';
 import { EditContact } from './pages/contacts/EditContact';
+import { Messages } from './pages/messages/Messages';
+import { NotificationsPage } from './pages/notifications/Notifications';
+import { Documents } from './pages/documents/Documents';
 import Deals from './pages/deals/Deals';
 import DealDetail from './pages/deals/DealDetail';
 import CreateDeal from './pages/deals/CreateDeal';
@@ -76,6 +79,16 @@ function App() {
             <Route path="new" element={<CreateContact />} />
             <Route path=":id/edit" element={<EditContact />} />
           </Route>
+
+          {/* Messages */}
+          <Route path="messages" element={<Messages />} />
+
+          {/* Notifications */}
+          <Route path="notifications" element={<NotificationsPage />} />
+          
+          
+          {/* Doucments */}
+          <Route path="documents" element={<Documents />} />
 
           {/* Deals */}
           <Route path="deals">

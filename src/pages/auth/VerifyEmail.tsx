@@ -23,7 +23,7 @@ export default function VerifyEmail() {
         setStatus('success');
         setMessage('Email verified successfully! You can now login.');
         // Redirect to login after 3 seconds
-        setTimeout(() => navigate('/login'), 3000);
+        setTimeout(() => navigate('/'), 3000);
       })
       .catch((error) => {
         setStatus('error');
