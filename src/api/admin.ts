@@ -1,3 +1,4 @@
+// src/api/admin.ts
 import { api } from './client';
 import type {
   AuditLogFilters,
@@ -10,6 +11,7 @@ import type {
   AuditLogDetailResponse,
   EntityChangeHistory,
   AuditLogSummaryResponse,
+  Backup, // Add this import
 } from '../types/admin';
 
 export const adminApi = {
@@ -57,13 +59,36 @@ export const adminApi = {
   /**
    * Create a new database backup
    */
-  createBackup: () => api.post<BackupResponse>('/admin/backup'),
+  createBackup: () => api.post<BackupResponse>('/admin/backup', {}, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }),
 
   /**
    * Get backup creation status
    */
   getBackupStatus: (backupId: string) =>
     api.get<BackupStatusResponse>(`/admin/backup/${backupId}/status`),
+
+  /**
+   * Get all backups
+   */
+  getBackups: () => api.get<{ success: boolean; data: Backup[] }>('/admin/backups'),
+
+  /**
+   * Download backup file
+   */
+  downloadBackup: (backupId: string) =>
+    api.get(`/admin/backup/${backupId}/download`, {
+      responseType: 'blob',
+    }),
+
+  /**
+   * Delete backup
+   */
+  deleteBackup: (backupId: string) =>
+    api.delete<{ success: boolean; message: string }>(`/admin/backup/${backupId}`),
 
   /**
    * Get system health information

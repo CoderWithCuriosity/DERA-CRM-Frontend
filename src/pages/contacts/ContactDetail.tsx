@@ -369,7 +369,7 @@ export default function ContactDetail() {
                   {contact.status}
                 </Badge>
                 {contact.tags?.map(tag => (
-                  <Badge key={tag} variant="primary" size="sm">{tag}</Badge>
+                  <Badge key={tag} variant="accent" size="sm">{tag}</Badge>
                 ))}
               </div>
             </div>

@@ -504,7 +504,7 @@ export function Contacts() {
                     <td className="p-4">
                       <div className="flex flex-wrap gap-1">
                         {contact.tags?.slice(0, 2).map((tag) => (
-                          <Badge key={tag} variant="primary" size="sm">
+                          <Badge key={tag} variant="accent" size="sm">
                             {tag}
                           </Badge>
                         ))}

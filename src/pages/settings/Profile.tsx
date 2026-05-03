@@ -170,7 +170,7 @@ export default function Profile() {
               htmlFor="avatar-upload" 
               className={`absolute bottom-0 right-0 p-1.5 bg-white rounded-full shadow-lg cursor-pointer hover:bg-gray-50 transition-colors ${uploadingAvatar ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              <Camera size={16} className="text-primary" />
+              <Camera size={16} className="text-[var(--sidebar-icon-active)]" />
               <input
                 type="file"
                 id="avatar-upload"

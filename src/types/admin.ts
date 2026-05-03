@@ -220,29 +220,6 @@ export interface UserActivityResponse {
   };
 }
 
-export interface BackupResponse {
-  success: boolean;
-  message: string;
-  data: {
-    backup_id: string;
-    estimated_time: string;
-  };
-}
-
-export interface BackupStatus {
-  backup_id: string;
-  status: 'processing' | 'completed' | 'failed';
-  size?: string;
-  download_url?: string;
-  expires_at?: string;
-  completed_at?: string;
-}
-
-export interface BackupStatusResponse {
-  success: boolean;
-  data: BackupStatus;
-}
-
 export interface SystemHealth {
   status: 'healthy' | 'degraded' | 'down';
   timestamp: string;
@@ -277,4 +254,38 @@ export interface SystemHealthResponse {
 export interface SystemStatsResponse {
   success: boolean;
   data: SystemStats;
+}
+
+export interface Backup {
+  id: number;
+  filename: string;
+  size: number;
+  status: 'processing' | 'completed' | 'failed';
+  created_at: string;
+  completed_at?: string;
+  download_url?: string;
+  expires_at?: string;
+}
+
+export interface BackupResponse {
+  success: boolean;
+  message: string;
+  data: {
+    backup_id: number;
+    estimated_time: string;
+  };
+}
+
+export interface BackupStatus {
+  backup_id: string;
+  status: 'processing' | 'completed' | 'failed';
+  size?: string;
+  download_url?: string;
+  expires_at?: string;
+  completed_at?: string;
+}
+
+export interface BackupStatusResponse {
+  success: boolean;
+  data: BackupStatus;
 }
