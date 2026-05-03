@@ -17,9 +17,10 @@ import type {
 
 interface PipelineChartProps {
   data: PipelineChartData;
+  currency: string
 }
 
-export function PipelineChart({ data }: PipelineChartProps) {
+export function PipelineChart({ data, currency }: PipelineChartProps) {
   // Custom bar renderer
   const renderBar = (props: any) => {
     const { x, y, width, height, index } = props;
@@ -45,7 +46,7 @@ export function PipelineChart({ data }: PipelineChartProps) {
     _name: NameType
   ): [string, string] => {
     if (typeof value === "number") {
-      return [formatCurrency(value), "Value"];
+      return [formatCurrency(value, currency), "Value"];
     }
 
     if (Array.isArray(value)) {
@@ -71,7 +72,7 @@ export function PipelineChart({ data }: PipelineChartProps) {
 
         <YAxis
           stroke="#6B7280"
-          tickFormatter={(value) => formatCurrency(value)}
+          tickFormatter={(value) => formatCurrency(value, currency)}
         />
 
         <Tooltip

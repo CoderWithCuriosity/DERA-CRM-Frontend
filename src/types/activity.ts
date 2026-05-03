@@ -47,6 +47,7 @@ export interface ActivityFilters {
   status?: ActivityStatus;
   date_from?: string;
   date_to?: string;
+  search?: string;
 }
 
 export interface CreateActivityData {

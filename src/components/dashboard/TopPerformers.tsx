@@ -1,12 +1,13 @@
-import { Trophy, DollarSign, Ticket } from 'lucide-react';
+import { Trophy, Ticket } from 'lucide-react';
 import type { TopPerformer } from '../../types/dashboard';
 import { formatCurrency } from '../../utils/formatters';
 
 interface TopPerformersProps {
   performers: TopPerformer[];
+  currency: string
 }
 
-export function TopPerformers({ performers }: TopPerformersProps) {
+export function TopPerformers({ performers, currency }: TopPerformersProps) {
   if (performers.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500">
@@ -36,8 +37,7 @@ export function TopPerformers({ performers }: TopPerformersProps) {
             <p className="font-medium text-deep-ink">{performer.name}</p>
             <div className="flex items-center space-x-3 mt-1">
               <div className="flex items-center text-xs text-gray-600">
-                <DollarSign size={12} className="mr-1" />
-                {formatCurrency(performer.deals_value)}
+                {formatCurrency(performer.deals_value, currency)}
               </div>
               <div className="flex items-center text-xs text-gray-600">
                 <Ticket size={12} className="mr-1" />

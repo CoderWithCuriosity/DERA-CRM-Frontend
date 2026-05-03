@@ -1,3 +1,4 @@
+// src/pages/contacts/ContactDetail.tsx
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Mail, Phone, Building, Calendar, Edit, Trash2, Plus, Activity, Ticket, Briefcase, X, Save, Send, DollarSign } from 'lucide-react';
@@ -17,6 +18,7 @@ import type { TicketPriority } from '../../types/ticket';
 import { formatDate, formatPhone } from '../../utils/formatters';
 import { useToast } from '../../hooks/useToast';
 import { useAuth } from '../../hooks/useAuth';
+import { useCurrency } from '../../hooks/useCurrency';
 import { AvatarUpload } from '../../components/contacts/AvatarUpload';
 import ContactAttachments from '../../components/contacts/ContactAttachments';
 import { attachmentsApi } from '../../api/attachments';
@@ -52,6 +54,7 @@ export default function ContactDetail() {
   const navigate = useNavigate();
   const toast = useToast();
   const { user } = useAuth();
+  const { formatCurrency } = useCurrency();
   const [contact, setContact] = useState<Contact | null>(null);
   const [deals, setDeals] = useState<any[]>([]);
   const [tickets, setTickets] = useState<any[]>([]);
@@ -481,7 +484,7 @@ export default function ContactDetail() {
                   >
                     <div>
                       <p className="font-medium">{deal.name}</p>
-                      <p className="text-sm text-gray-500">Amount: ${deal.amount?.toLocaleString()}</p>
+                      <p className="text-sm text-gray-500">Amount: {formatCurrency(deal.amount)}</p>
                     </div>
                     <Badge variant={deal.stage === 'won' ? 'success' : deal.stage === 'lost' ? 'danger' : 'default'}>
                       {deal.stage}

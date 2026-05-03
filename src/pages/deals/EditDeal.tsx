@@ -12,6 +12,7 @@ import { Textarea } from '../../components/ui/Textarea';
 import { dealsApi } from '../../api/deals';
 import { useToast } from '../../hooks/useToast';
 import { useAuth } from '../../hooks/useAuth';
+import { useCurrency } from '../../hooks/useCurrency';
 import type { Deal } from '../../types/deal';
 
 const editDealSchema = z.object({
@@ -39,6 +40,7 @@ export default function EditDeal() {
   const navigate = useNavigate();
   const toast = useToast();
   const { user } = useAuth();
+  const { formatCurrency } = useCurrency();
   const [deal, setDeal] = useState<Deal | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -176,6 +178,7 @@ export default function EditDeal() {
               <Input
                 label="Amount"
                 type="number"
+                step="0.01"
                 placeholder="0.00"
                 error={errors.amount?.message}
                 leftIcon={<DollarSign size={18} />}
@@ -226,11 +229,11 @@ export default function EditDeal() {
               </div>
               <div>
                 <p className="text-sm text-gray-500">Amount</p>
-                <p className="font-medium">${selectedAmount.toLocaleString()}</p>
+                <p className="font-medium">{formatCurrency(selectedAmount)}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Weighted Amount</p>
-                <p className="font-medium text-primary">${weightedAmount.toLocaleString()}</p>
+                <p className="font-medium text-primary">{formatCurrency(weightedAmount)}</p>
               </div>
             </div>
           </div>

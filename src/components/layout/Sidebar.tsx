@@ -24,7 +24,6 @@ import {
 import { cn } from '../../utils/cn';
 import { useAuth } from '../../hooks/useAuth';
 import { messagesApi } from '../../api/messages';
-import { notificationsApi } from '../../api/notifications';
 
 interface NavItem {
   name: string;
@@ -104,7 +103,7 @@ export function Sidebar() {
     { name: 'Campaigns', path: '/campaigns', icon: Mail, roles: ['admin', 'manager', 'agent'] },
     { name: 'Documents', path: '/documents', icon: FileText, roles: ['admin', 'manager', 'agent'] },
     { name: 'Messages', path: '/messages', icon: MessageSquare, badge: messageCount, roles: ['admin', 'manager', 'agent'] },
-    // { name: 'Reports', path: '/reports', icon: BarChart3, roles: ['admin', 'manager'] },
+    { name: 'Reports', path: '/reports', icon: BarChart3, roles: ['admin', 'manager'] },
     { name: 'Profile', path: '/settings/profile', icon: Settings, roles: ['admin', 'manager', 'agent'] },
     { name: 'Organization', path: '/settings/organization', icon: Building2, roles: ['admin'] },
     { name: 'User Management', path: '/settings/users', icon: UserCog, roles: ['admin'] },

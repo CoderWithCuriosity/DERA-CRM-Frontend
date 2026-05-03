@@ -17,7 +17,8 @@ import { dealsApi } from '../../api/deals';
 import { usersApi } from '../../api/users';
 import { useToast } from '../../hooks/useToast';
 import { useAuth } from '../../hooks/useAuth';
-import { formatCurrency, formatDate } from '../../utils/formatters';
+import { useCurrency } from '../../hooks/useCurrency';
+import { formatDate } from '../../utils/formatters';
 import type { Deal, DealFilters, DealStage, DealStatus } from '../../types/deal';
 import type { User } from '../../types/user';
 
@@ -51,6 +52,7 @@ export default function Deals() {
   const navigate = useNavigate();
   const toast = useToast();
   const { user } = useAuth();
+  const { formatCurrency } = useCurrency();
 
   // Data states
   const [deals, setDeals] = useState<(Deal & { weighted_amount: number })[]>([]);

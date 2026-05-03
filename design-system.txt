@@ -1,0 +1,1590 @@
+# CRM Design System — Complete Guide
+
+> **Stack**: React 19 + TypeScript + Tailwind CSS v4 + Framer Motion + Lucide React + Recharts
+> **Goal**: A refined, modern CRM UI with tight typography, elegant spacing, light/dark mode, and a consistent component language. Inspired by Linear, Notion, and Attio — clean, fast-feeling, professional.
+
+---
+
+## 1. Design Direction
+
+**Aesthetic**: Refined Utility — clean lines, controlled density, subtle depth. Not flat-boring, not over-animated. Every pixel earns its place.
+
+**Personality**: Professional, calm, trustworthy. A tool serious sales people enjoy using daily.
+
+**Key principle**: Small, sharp typography. Generous micro-spacing. Subtle color use. Motion only where it guides attention.
+
+---
+
+## 2. CSS Variables & Theme
+
+Add these to `src/index.css`. Tailwind v4 uses `@theme` — define custom tokens inside it.
+
+```css
+@import "tailwindcss";
+
+@theme {
+  /* --- Typography --- */
+  --font-sans: "Geist", "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", "JetBrains Mono", ui-monospace, monospace;
+
+  /* --- Font Sizes (small/moderate as requested) --- */
+  --text-2xs: 0.625rem;   /* 10px */
+  --text-xs:  0.6875rem;  /* 11px */
+  --text-sm:  0.75rem;    /* 12px */
+  --text-base: 0.8125rem; /* 13px — default body */
+  --text-md:  0.875rem;   /* 14px */
+  --text-lg:  0.9375rem;  /* 15px */
+  --text-xl:  1rem;       /* 16px */
+  --text-2xl: 1.125rem;   /* 18px */
+  --text-3xl: 1.25rem;    /* 20px */
+  --text-4xl: 1.5rem;     /* 24px */
+
+  /* --- Border Radius --- */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-full: 9999px;
+
+  /* --- Spacing (tight but breathable) --- */
+  --spacing: 0.25rem; /* Tailwind spacing scale base */
+
+  /* --- Transitions --- */
+  --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 120ms;
+  --duration-normal: 200ms;
+  --duration-slow: 320ms;
+}
+
+/* ============================================================
+   LIGHT MODE TOKENS
+   ============================================================ */
+:root {
+  color-scheme: light;
+
+  /* Backgrounds */
+  --bg-app:      #F7F7F5;   /* page background — warm off-white */
+  --bg-base:     #FFFFFF;   /* cards, panels */
+  --bg-subtle:   #F4F4F2;   /* sidebar, table rows, hover states */
+  --bg-muted:    #EEEEEC;   /* disabled, secondary surfaces */
+  --bg-overlay:  rgba(0, 0, 0, 0.45); /* modal overlay */
+
+  /* Borders */
+  --border-default: rgba(0, 0, 0, 0.08);
+  --border-strong:  rgba(0, 0, 0, 0.14);
+  --border-focus:   #3B82F6;
+
+  /* Text */
+  --text-primary:   #111110;
+  --text-secondary: #6B6B69;
+  --text-tertiary:  #9B9B99;
+  --text-disabled:  #C4C4C2;
+  --text-inverse:   #FFFFFF;
+  --text-link:      #2563EB;
+
+  /* Brand / Accent */
+  --accent:         #2563EB;   /* primary blue */
+  --accent-hover:   #1D4ED8;
+  --accent-subtle:  #EFF6FF;
+  --accent-text:    #1E40AF;
+
+  /* Semantic */
+  --success:        #16A34A;
+  --success-subtle: #F0FDF4;
+  --success-text:   #15803D;
+
+  --warning:        #D97706;
+  --warning-subtle: #FFFBEB;
+  --warning-text:   #B45309;
+
+  --danger:         #DC2626;
+  --danger-subtle:  #FEF2F2;
+  --danger-text:    #B91C1C;
+
+  --info:           #0284C7;
+  --info-subtle:    #F0F9FF;
+  --info-text:      #0369A1;
+
+  /* Deal Stage Colors */
+  --stage-lead:       #8B5CF6;
+  --stage-lead-bg:    #F5F3FF;
+  --stage-qualified:  #3B82F6;
+  --stage-qualified-bg: #EFF6FF;
+  --stage-proposal:   #F59E0B;
+  --stage-proposal-bg: #FFFBEB;
+  --stage-negotiation:#F97316;
+  --stage-negotiation-bg: #FFF7ED;
+  --stage-won:        #22C55E;
+  --stage-won-bg:     #F0FDF4;
+  --stage-lost:       #EF4444;
+  --stage-lost-bg:    #FEF2F2;
+
+  /* Sidebar */
+  --sidebar-bg:        #FAFAF9;
+  --sidebar-border:    rgba(0, 0, 0, 0.07);
+  --sidebar-text:      #6B6B69;
+  --sidebar-text-active: #111110;
+  --sidebar-item-hover: rgba(0, 0, 0, 0.05);
+  --sidebar-item-active: rgba(0, 0, 0, 0.08);
+  --sidebar-icon:      #9B9B99;
+  --sidebar-icon-active: #2563EB;
+
+  /* Shadows */
+  --shadow-sm:  0 1px 2px 0 rgba(0,0,0,0.05);
+  --shadow-md:  0 2px 8px -1px rgba(0,0,0,0.08), 0 1px 3px -1px rgba(0,0,0,0.05);
+  --shadow-lg:  0 8px 24px -4px rgba(0,0,0,0.10), 0 2px 8px -2px rgba(0,0,0,0.06);
+  --shadow-xl:  0 20px 40px -8px rgba(0,0,0,0.14), 0 4px 12px -4px rgba(0,0,0,0.08);
+}
+
+/* ============================================================
+   DARK MODE TOKENS
+   ============================================================ */
+.dark {
+  color-scheme: dark;
+
+  /* Backgrounds */
+  --bg-app:      #111110;
+  --bg-base:     #1C1C1A;
+  --bg-subtle:   #232321;
+  --bg-muted:    #2A2A28;
+  --bg-overlay:  rgba(0, 0, 0, 0.65);
+
+  /* Borders */
+  --border-default: rgba(255, 255, 255, 0.08);
+  --border-strong:  rgba(255, 255, 255, 0.14);
+  --border-focus:   #60A5FA;
+
+  /* Text */
+  --text-primary:   #EDEDEB;
+  --text-secondary: #A0A09E;
+  --text-tertiary:  #71716F;
+  --text-disabled:  #4A4A48;
+  --text-inverse:   #111110;
+  --text-link:      #60A5FA;
+
+  /* Brand / Accent */
+  --accent:         #3B82F6;
+  --accent-hover:   #60A5FA;
+  --accent-subtle:  #1E3A5F;
+  --accent-text:    #93C5FD;
+
+  /* Semantic */
+  --success:        #22C55E;
+  --success-subtle: #052E16;
+  --success-text:   #86EFAC;
+
+  --warning:        #F59E0B;
+  --warning-subtle: #1C1500;
+  --warning-text:   #FCD34D;
+
+  --danger:         #EF4444;
+  --danger-subtle:  #2D0A0A;
+  --danger-text:    #FCA5A5;
+
+  --info:           #38BDF8;
+  --info-subtle:    #082030;
+  --info-text:      #7DD3FC;
+
+  /* Deal Stage Colors — dark */
+  --stage-lead:       #A78BFA;
+  --stage-lead-bg:    #1E1830;
+  --stage-qualified:  #60A5FA;
+  --stage-qualified-bg: #0F1E35;
+  --stage-proposal:   #FCD34D;
+  --stage-proposal-bg: #1F1500;
+  --stage-negotiation:#FB923C;
+  --stage-negotiation-bg: #1F0E00;
+  --stage-won:        #4ADE80;
+  --stage-won-bg:     #052E16;
+  --stage-lost:       #F87171;
+  --stage-lost-bg:    #2D0A0A;
+
+  /* Sidebar */
+  --sidebar-bg:        #161615;
+  --sidebar-border:    rgba(255, 255, 255, 0.06);
+  --sidebar-text:      #A0A09E;
+  --sidebar-text-active: #EDEDEB;
+  --sidebar-item-hover: rgba(255, 255, 255, 0.04);
+  --sidebar-item-active: rgba(255, 255, 255, 0.08);
+  --sidebar-icon:      #71716F;
+  --sidebar-icon-active: #60A5FA;
+
+  /* Shadows (elevated glow style for dark) */
+  --shadow-sm:  0 1px 2px 0 rgba(0,0,0,0.3);
+  --shadow-md:  0 2px 8px -1px rgba(0,0,0,0.4), 0 1px 3px -1px rgba(0,0,0,0.3);
+  --shadow-lg:  0 8px 24px -4px rgba(0,0,0,0.5), 0 2px 8px -2px rgba(0,0,0,0.4);
+  --shadow-xl:  0 20px 40px -8px rgba(0,0,0,0.6), 0 4px 12px -4px rgba(0,0,0,0.4);
+}
+
+/* ============================================================
+   BASE STYLES
+   ============================================================ */
+* {
+  box-sizing: border-box;
+  border-color: var(--border-default);
+}
+
+html {
+  font-size: 13px; /* base = 13px, everything scales from here */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  line-height: 1.5;
+  font-size: 1rem; /* = 13px */
+}
+
+/* Scrollbars */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
+
+/* Selection */
+::selection { background: var(--accent-subtle); color: var(--accent-text); }
+
+/* Focus visible */
+:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-md);
+}
+```
+
+---
+
+## 3. Tailwind Utility Classes
+
+Map CSS variables to Tailwind utilities in your `vite.config.ts` or `tailwind.config` — but since you're on Tailwind v4, use `@utility` blocks in your CSS:
+
+```css
+/* Append to index.css */
+
+@layer utilities {
+  /* Backgrounds */
+  .bg-app     { background-color: var(--bg-app); }
+  .bg-base    { background-color: var(--bg-base); }
+  .bg-subtle  { background-color: var(--bg-subtle); }
+  .bg-muted   { background-color: var(--bg-muted); }
+
+  /* Text */
+  .text-pri   { color: var(--text-primary); }
+  .text-sec   { color: var(--text-secondary); }
+  .text-ter   { color: var(--text-tertiary); }
+  .text-link  { color: var(--text-link); }
+  .text-accent { color: var(--accent); }
+
+  /* Borders */
+  .border-default { border-color: var(--border-default); }
+  .border-strong  { border-color: var(--border-strong); }
+
+  /* Shadows */
+  .shadow-card { box-shadow: var(--shadow-md); }
+  .shadow-popover { box-shadow: var(--shadow-lg); }
+  .shadow-modal { box-shadow: var(--shadow-xl); }
+
+  /* Sidebar-specific */
+  .bg-sidebar { background-color: var(--sidebar-bg); }
+  .text-sidebar { color: var(--sidebar-text); }
+  .text-sidebar-active { color: var(--sidebar-text-active); }
+
+  /* Semantic surfaces */
+  .bg-success-subtle { background-color: var(--success-subtle); }
+  .bg-warning-subtle { background-color: var(--warning-subtle); }
+  .bg-danger-subtle  { background-color: var(--danger-subtle); }
+  .bg-info-subtle    { background-color: var(--info-subtle); }
+  .bg-accent-subtle  { background-color: var(--accent-subtle); }
+
+  .text-success { color: var(--success-text); }
+  .text-warning { color: var(--warning-text); }
+  .text-danger  { color: var(--danger-text); }
+  .text-info    { color: var(--info-text); }
+
+  /* Smooth transition */
+  .transition-smooth { transition: all var(--duration-normal) var(--ease-smooth); }
+  .transition-fast   { transition: all var(--duration-fast) var(--ease-smooth); }
+}
+```
+
+---
+
+## 4. Font Setup
+
+Add to your `index.html` `<head>`:
+
+```html
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+```
+
+> **Why DM Sans**: It's optically small — at 13px it reads like 14–15px of a generic font. Friendly but professional. Not overused in SaaS.
+
+---
+
+## 5. Theme Hook
+
+```typescript
+// src/hooks/useTheme.ts
+import { useState, useEffect } from 'react';
+
+type Theme = 'light' | 'dark' | 'system';
+
+export function useTheme() {
+  const [theme, setTheme] = useState<Theme>(
+    () => (localStorage.getItem('crm-theme') as Theme) ?? 'system'
+  );
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const mql = window.matchMedia('(prefers-color-scheme: dark)');
+
+    const apply = (t: Theme) => {
+      const isDark = t === 'dark' || (t === 'system' && mql.matches);
+      root.classList.toggle('dark', isDark);
+    };
+
+    apply(theme);
+    localStorage.setItem('crm-theme', theme);
+
+    if (theme === 'system') {
+      const handler = () => apply('system');
+      mql.addEventListener('change', handler);
+      return () => mql.removeEventListener('change', handler);
+    }
+  }, [theme]);
+
+  return { theme, setTheme };
+}
+```
+
+---
+
+## 6. Component Library
+
+### 6.1 Button
+
+```tsx
+// src/components/ui/Button.tsx
+import { forwardRef } from 'react';
+import { cn } from '@/utils/cn';
+import { Loader2 } from 'lucide-react';
+
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'outline';
+type ButtonSize = 'xs' | 'sm' | 'md' | 'lg';
+
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  loading?: boolean;
+  icon?: React.ReactNode;
+  iconRight?: React.ReactNode;
+}
+
+const variants: Record<ButtonVariant, string> = {
+  primary:   'bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] shadow-sm active:scale-[0.98]',
+  secondary: 'bg-[var(--bg-subtle)] text-[var(--text-primary)] hover:bg-[var(--bg-muted)] border border-[var(--border-default)]',
+  ghost:     'bg-transparent text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)]',
+  danger:    'bg-[var(--danger)] text-white hover:opacity-90 shadow-sm active:scale-[0.98]',
+  outline:   'bg-transparent border border-[var(--border-strong)] text-[var(--text-primary)] hover:bg-[var(--bg-subtle)]',
+};
+
+const sizes: Record<ButtonSize, string> = {
+  xs: 'h-6 px-2 text-[11px] gap-1 rounded-[var(--radius-sm)]',
+  sm: 'h-7 px-2.5 text-[12px] gap-1.5 rounded-[var(--radius-md)]',
+  md: 'h-8 px-3 text-[13px] gap-2 rounded-[var(--radius-md)]',
+  lg: 'h-9 px-4 text-[14px] gap-2 rounded-[var(--radius-lg)]',
+};
+
+export const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
+  variant = 'secondary',
+  size = 'md',
+  loading,
+  icon,
+  iconRight,
+  className,
+  children,
+  disabled,
+  ...props
+}, ref) => (
+  <button
+    ref={ref}
+    disabled={disabled || loading}
+    className={cn(
+      'inline-flex items-center justify-center font-medium select-none',
+      'transition-all duration-[120ms] ease-out',
+      'focus-visible:outline-2 focus-visible:outline-[var(--border-focus)] focus-visible:outline-offset-2',
+      'disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none',
+      variants[variant],
+      sizes[size],
+      className
+    )}
+    {...props}
+  >
+    {loading
+      ? <Loader2 className="animate-spin" style={{ width: 13, height: 13 }} />
+      : icon && <span style={{ display: 'flex', width: 14, height: 14, alignItems: 'center' }}>{icon}</span>
+    }
+    {children}
+    {iconRight && <span style={{ display: 'flex', width: 14, height: 14, alignItems: 'center' }}>{iconRight}</span>}
+  </button>
+));
+```
+
+---
+
+### 6.2 Input
+
+```tsx
+// src/components/ui/Input.tsx
+import { forwardRef } from 'react';
+import { cn } from '@/utils/cn';
+
+interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  label?: string;
+  error?: string;
+  hint?: string;
+  icon?: React.ReactNode;
+  iconRight?: React.ReactNode;
+}
+
+export const Input = forwardRef<HTMLInputElement, InputProps>(({
+  label,
+  error,
+  hint,
+  icon,
+  iconRight,
+  className,
+  id,
+  ...props
+}, ref) => {
+  const inputId = id ?? label?.toLowerCase().replace(/\s/g, '-');
+
+  return (
+    <div className="flex flex-col gap-1">
+      {label && (
+        <label
+          htmlFor={inputId}
+          style={{
+            fontSize: 11,
+            fontWeight: 500,
+            color: 'var(--text-secondary)',
+            letterSpacing: '0.02em',
+            textTransform: 'uppercase',
+          }}
+        >
+          {label}
+        </label>
+      )}
+      <div className="relative flex items-center">
+        {icon && (
+          <span className="absolute left-2.5 flex items-center" style={{ color: 'var(--text-tertiary)', width: 14, height: 14 }}>
+            {icon}
+          </span>
+        )}
+        <input
+          ref={ref}
+          id={inputId}
+          className={cn(
+            'w-full h-8 rounded-[var(--radius-md)] border border-[var(--border-default)]',
+            'bg-[var(--bg-base)] text-[var(--text-primary)]',
+            'text-[13px] font-normal',
+            'placeholder:text-[var(--text-tertiary)]',
+            'transition-all duration-[120ms]',
+            'hover:border-[var(--border-strong)]',
+            'focus:outline-none focus:border-[var(--border-focus)] focus:ring-2 focus:ring-[var(--border-focus)] focus:ring-opacity-20',
+            icon ? 'pl-8' : 'px-3',
+            iconRight ? 'pr-8' : 'px-3',
+            error && 'border-[var(--danger)] focus:border-[var(--danger)] focus:ring-[var(--danger)]',
+            className
+          )}
+          {...props}
+        />
+        {iconRight && (
+          <span className="absolute right-2.5 flex items-center" style={{ color: 'var(--text-tertiary)', width: 14, height: 14 }}>
+            {iconRight}
+          </span>
+        )}
+      </div>
+      {error && <p style={{ fontSize: 11, color: 'var(--danger-text)' }}>{error}</p>}
+      {hint && !error && <p style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>{hint}</p>}
+    </div>
+  );
+});
+```
+
+---
+
+### 6.3 Card
+
+```tsx
+// src/components/ui/Card.tsx
+import { cn } from '@/utils/cn';
+
+interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+  padding?: 'none' | 'sm' | 'md' | 'lg';
+  hover?: boolean;
+}
+
+const paddings = {
+  none: '',
+  sm: 'p-3',
+  md: 'p-4',
+  lg: 'p-5',
+};
+
+export function Card({ padding = 'md', hover = false, className, children, ...props }: CardProps) {
+  return (
+    <div
+      className={cn(
+        'rounded-[var(--radius-xl)] border border-[var(--border-default)]',
+        'bg-[var(--bg-base)]',
+        'transition-all duration-[120ms]',
+        hover && 'hover:border-[var(--border-strong)] hover:shadow-[var(--shadow-md)] cursor-pointer',
+        paddings[padding],
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+}
+
+export function CardHeader({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div className={cn('flex items-center justify-between mb-3', className)} {...props}>
+      {children}
+    </div>
+  );
+}
+
+export function CardTitle({ className, children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
+  return (
+    <h3
+      className={cn(className)}
+      style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}
+      {...props}
+    >
+      {children}
+    </h3>
+  );
+}
+```
+
+---
+
+### 6.4 Badge
+
+```tsx
+// src/components/ui/Badge.tsx
+import { cn } from '@/utils/cn';
+
+type BadgeVariant = 'default' | 'accent' | 'success' | 'warning' | 'danger' | 'info' | 'purple' | 'orange';
+
+interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
+  variant?: BadgeVariant;
+  size?: 'sm' | 'md';
+  dot?: boolean;
+}
+
+const variants: Record<BadgeVariant, string> = {
+  default:  'bg-[var(--bg-muted)] text-[var(--text-secondary)]',
+  accent:   'bg-[var(--accent-subtle)] text-[var(--accent-text)]',
+  success:  'bg-[var(--success-subtle)] text-[var(--success-text)]',
+  warning:  'bg-[var(--warning-subtle)] text-[var(--warning-text)]',
+  danger:   'bg-[var(--danger-subtle)] text-[var(--danger-text)]',
+  info:     'bg-[var(--info-subtle)] text-[var(--info-text)]',
+  purple:   'bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300',
+  orange:   'bg-orange-50 text-orange-700 dark:bg-orange-950 dark:text-orange-300',
+};
+
+const dotColors: Record<BadgeVariant, string> = {
+  default:  'bg-[var(--text-tertiary)]',
+  accent:   'bg-[var(--accent)]',
+  success:  'bg-[var(--success)]',
+  warning:  'bg-[var(--warning)]',
+  danger:   'bg-[var(--danger)]',
+  info:     'bg-[var(--info)]',
+  purple:   'bg-purple-500',
+  orange:   'bg-orange-500',
+};
+
+export function Badge({ variant = 'default', size = 'sm', dot, className, children, ...props }: BadgeProps) {
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center gap-1 rounded-full font-medium',
+        size === 'sm' ? 'px-1.5 py-0.5 text-[10px]' : 'px-2 py-0.5 text-[11px]',
+        variants[variant],
+        className
+      )}
+      {...props}
+    >
+      {dot && <span className={cn('rounded-full flex-shrink-0', dotColors[variant])} style={{ width: 5, height: 5 }} />}
+      {children}
+    </span>
+  );
+}
+```
+
+---
+
+### 6.5 Modal
+
+```tsx
+// src/components/ui/Modal.tsx
+import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { X } from 'lucide-react';
+import { cn } from '@/utils/cn';
+
+interface ModalProps {
+  open: boolean;
+  onClose: () => void;
+  title?: string;
+  description?: string;
+  size?: 'sm' | 'md' | 'lg' | 'xl';
+  children: React.ReactNode;
+  footer?: React.ReactNode;
+}
+
+const sizes = {
+  sm: 'max-w-sm',
+  md: 'max-w-md',
+  lg: 'max-w-lg',
+  xl: 'max-w-2xl',
+};
+
+export function Modal({ open, onClose, title, description, size = 'md', children, footer }: ModalProps) {
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [onClose]);
+
+  useEffect(() => {
+    document.body.style.overflow = open ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [open]);
+
+  return createPortal(
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ backgroundColor: 'var(--bg-overlay)' }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+          onClick={(e) => e.target === e.currentTarget && onClose()}
+        >
+          <motion.div
+            className={cn(
+              'w-full rounded-[var(--radius-2xl)] border border-[var(--border-default)]',
+              'bg-[var(--bg-base)] shadow-[var(--shadow-xl)]',
+              'flex flex-col max-h-[90vh]',
+              sizes[size]
+            )}
+            initial={{ opacity: 0, scale: 0.96, y: 8 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: 8 }}
+            transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+          >
+            {/* Header */}
+            {(title || description) && (
+              <div className="flex items-start justify-between p-5 border-b border-[var(--border-default)] flex-shrink-0">
+                <div>
+                  {title && (
+                    <h2 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '-0.015em' }}>
+                      {title}
+                    </h2>
+                  )}
+                  {description && (
+                    <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
+                      {description}
+                    </p>
+                  )}
+                </div>
+                <button
+                  onClick={onClose}
+                  className="p-1 rounded-[var(--radius-md)] hover:bg-[var(--bg-subtle)] transition-colors"
+                  style={{ color: 'var(--text-tertiary)', marginLeft: 16 }}
+                >
+                  <X style={{ width: 16, height: 16 }} />
+                </button>
+              </div>
+            )}
+
+            {/* Body */}
+            <div className="flex-1 overflow-y-auto p-5">
+              {children}
+            </div>
+
+            {/* Footer */}
+            {footer && (
+              <div className="flex items-center justify-end gap-2 p-4 border-t border-[var(--border-default)] flex-shrink-0">
+                {footer}
+              </div>
+            )}
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>,
+    document.body
+  );
+}
+```
+
+---
+
+### 6.6 Select
+
+```tsx
+// src/components/ui/Select.tsx
+import { forwardRef } from 'react';
+import { cn } from '@/utils/cn';
+import { ChevronDown } from 'lucide-react';
+
+interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+  label?: string;
+  error?: string;
+  options: { value: string; label: string }[];
+}
+
+export const Select = forwardRef<HTMLSelectElement, SelectProps>(({
+  label, error, options, className, id, ...props
+}, ref) => {
+  const selectId = id ?? label?.toLowerCase().replace(/\s/g, '-');
+  return (
+    <div className="flex flex-col gap-1">
+      {label && (
+        <label
+          htmlFor={selectId}
+          style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-secondary)', letterSpacing: '0.02em', textTransform: 'uppercase' }}
+        >
+          {label}
+        </label>
+      )}
+      <div className="relative">
+        <select
+          ref={ref}
+          id={selectId}
+          className={cn(
+            'w-full h-8 rounded-[var(--radius-md)] border border-[var(--border-default)]',
+            'bg-[var(--bg-base)] text-[var(--text-primary)]',
+            'text-[13px] pl-3 pr-8 appearance-none',
+            'transition-all duration-[120ms]',
+            'hover:border-[var(--border-strong)]',
+            'focus:outline-none focus:border-[var(--border-focus)] focus:ring-2 focus:ring-[var(--border-focus)] focus:ring-opacity-20',
+            error && 'border-[var(--danger)]',
+            className
+          )}
+          {...props}
+        >
+          {options.map(opt => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
+        <ChevronDown
+          className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
+          style={{ width: 12, height: 12, color: 'var(--text-tertiary)' }}
+        />
+      </div>
+      {error && <p style={{ fontSize: 11, color: 'var(--danger-text)' }}>{error}</p>}
+    </div>
+  );
+});
+```
+
+---
+
+### 6.7 Textarea
+
+```tsx
+// src/components/ui/Textarea.tsx
+import { forwardRef } from 'react';
+import { cn } from '@/utils/cn';
+
+interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+  label?: string;
+  error?: string;
+  hint?: string;
+}
+
+export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(({
+  label, error, hint, className, id, ...props
+}, ref) => {
+  const textareaId = id ?? label?.toLowerCase().replace(/\s/g, '-');
+  return (
+    <div className="flex flex-col gap-1">
+      {label && (
+        <label
+          htmlFor={textareaId}
+          style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-secondary)', letterSpacing: '0.02em', textTransform: 'uppercase' }}
+        >
+          {label}
+        </label>
+      )}
+      <textarea
+        ref={ref}
+        id={textareaId}
+        className={cn(
+          'w-full rounded-[var(--radius-md)] border border-[var(--border-default)]',
+          'bg-[var(--bg-base)] text-[var(--text-primary)]',
+          'text-[13px] px-3 py-2 resize-y min-h-[80px]',
+          'placeholder:text-[var(--text-tertiary)]',
+          'transition-all duration-[120ms]',
+          'hover:border-[var(--border-strong)]',
+          'focus:outline-none focus:border-[var(--border-focus)] focus:ring-2 focus:ring-[var(--border-focus)] focus:ring-opacity-20',
+          error && 'border-[var(--danger)]',
+          className
+        )}
+        {...props}
+      />
+      {error && <p style={{ fontSize: 11, color: 'var(--danger-text)' }}>{error}</p>}
+      {hint && !error && <p style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>{hint}</p>}
+    </div>
+  );
+});
+```
+
+---
+
+## 7. Layout Components
+
+### 7.1 Sidebar
+
+```tsx
+// src/components/layout/Sidebar.tsx
+import { NavLink } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  LayoutDashboard, Users, TrendingUp, Ticket, Activity,
+  Mail, Bell, FileText, BarChart2, Settings, ChevronLeft,
+  Building2, Shield
+} from 'lucide-react';
+import { cn } from '@/utils/cn';
+
+const navItems = [
+  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/contacts', icon: Users, label: 'Contacts' },
+  { to: '/deals', icon: TrendingUp, label: 'Deals' },
+  { to: '/tickets', icon: Ticket, label: 'Tickets' },
+  { to: '/activities', icon: Activity, label: 'Activities' },
+  { to: '/campaigns', icon: Mail, label: 'Campaigns' },
+  { to: '/messages', icon: Mail, label: 'Messages' },
+  { to: '/notifications', icon: Bell, label: 'Notifications' },
+  { to: '/documents', icon: FileText, label: 'Documents' },
+  { to: '/reports', icon: BarChart2, label: 'Reports' },
+];
+
+const bottomItems = [
+  { to: '/settings/profile', icon: Settings, label: 'Settings' },
+  { to: '/admin', icon: Shield, label: 'Admin', adminOnly: true },
+];
+
+interface SidebarProps {
+  collapsed?: boolean;
+  onToggle?: () => void;
+  isAdmin?: boolean;
+}
+
+function NavItem({ to, icon: Icon, label, collapsed }: {
+  to: string; icon: React.ElementType; label: string; collapsed?: boolean;
+}) {
+  return (
+    <NavLink to={to} end={to === '/dashboard'}>
+      {({ isActive }) => (
+        <div
+          className={cn(
+            'flex items-center gap-2.5 px-2.5 py-1.5 rounded-[var(--radius-md)]',
+            'transition-all duration-[120ms] cursor-pointer select-none',
+            'group',
+            isActive
+              ? 'bg-[var(--sidebar-item-active)] text-[var(--sidebar-text-active)]'
+              : 'text-[var(--sidebar-text)] hover:bg-[var(--sidebar-item-hover)] hover:text-[var(--sidebar-text-active)]'
+          )}
+        >
+          <Icon
+            style={{
+              width: 15,
+              height: 15,
+              flexShrink: 0,
+              color: isActive ? 'var(--sidebar-icon-active)' : 'var(--sidebar-icon)',
+              transition: 'color 120ms',
+            }}
+          />
+          <AnimatePresence initial={false}>
+            {!collapsed && (
+              <motion.span
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: 'auto' }}
+                exit={{ opacity: 0, width: 0 }}
+                transition={{ duration: 0.15 }}
+                style={{
+                  fontSize: 13,
+                  fontWeight: isActive ? 500 : 400,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                }}
+              >
+                {label}
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
+    </NavLink>
+  );
+}
+
+export function Sidebar({ collapsed = false, onToggle, isAdmin }: SidebarProps) {
+  return (
+    <motion.aside
+      animate={{ width: collapsed ? 52 : 220 }}
+      transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+      className="flex flex-col h-full border-r border-[var(--sidebar-border)] overflow-hidden flex-shrink-0"
+      style={{ backgroundColor: 'var(--sidebar-bg)' }}
+    >
+      {/* Logo */}
+      <div className="flex items-center justify-between px-3 h-12 border-b border-[var(--sidebar-border)] flex-shrink-0">
+        <AnimatePresence initial={false}>
+          {!collapsed && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex items-center gap-2"
+            >
+              <div className="w-6 h-6 rounded-[var(--radius-md)] flex items-center justify-center"
+                   style={{ backgroundColor: 'var(--accent)' }}>
+                <Building2 style={{ width: 13, height: 13, color: 'white' }} />
+              </div>
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+                YourCRM
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <button
+          onClick={onToggle}
+          className="p-1 rounded-[var(--radius-md)] hover:bg-[var(--sidebar-item-hover)] transition-colors"
+          style={{ color: 'var(--sidebar-icon)', flexShrink: 0 }}
+        >
+          <motion.div animate={{ rotate: collapsed ? 180 : 0 }} transition={{ duration: 0.2 }}>
+            <ChevronLeft style={{ width: 14, height: 14 }} />
+          </motion.div>
+        </button>
+      </div>
+
+      {/* Nav */}
+      <nav className="flex-1 overflow-y-auto p-2 space-y-0.5">
+        {navItems.map((item) => (
+          <NavItem key={item.to} {...item} collapsed={collapsed} />
+        ))}
+
+        <div className="my-2 border-t border-[var(--sidebar-border)]" />
+
+        {bottomItems
+          .filter(item => !item.adminOnly || isAdmin)
+          .map(item => (
+            <NavItem key={item.to} {...item} collapsed={collapsed} />
+          ))
+        }
+      </nav>
+
+      {/* Footer */}
+      {!collapsed && (
+        <div className="p-3 border-t border-[var(--sidebar-border)]">
+          <div className="flex items-center gap-2.5 px-1">
+            <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-semibold"
+                 style={{ backgroundColor: 'var(--accent-subtle)', color: 'var(--accent-text)' }}>
+              U
+            </div>
+            <div className="flex-1 min-w-0">
+              <p style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-primary)', truncate: true }}>User Name</p>
+              <p style={{ fontSize: 11, color: 'var(--text-tertiary)', truncate: true }}>user@email.com</p>
+            </div>
+          </div>
+        </div>
+      )}
+    </motion.aside>
+  );
+}
+```
+
+---
+
+### 7.2 Header
+
+```tsx
+// src/components/layout/Header.tsx
+import { Search, Sun, Moon, Monitor, Bell } from 'lucide-react';
+import { useTheme } from '@/hooks/useTheme';
+import { Input } from '@/components/ui/Input';
+
+export function Header() {
+  const { theme, setTheme } = useTheme();
+
+  const themeOptions = [
+    { value: 'light' as const, icon: Sun },
+    { value: 'dark' as const, icon: Moon },
+    { value: 'system' as const, icon: Monitor },
+  ];
+
+  return (
+    <header
+      className="h-12 flex items-center gap-3 px-4 border-b border-[var(--border-default)] flex-shrink-0"
+      style={{ backgroundColor: 'var(--bg-base)' }}
+    >
+      {/* Search */}
+      <div className="flex-1 max-w-sm">
+        <Input
+          placeholder="Search..."
+          icon={<Search style={{ width: 13, height: 13 }} />}
+          className="h-7 text-[12px]"
+        />
+      </div>
+
+      <div className="flex-1" />
+
+      {/* Theme Switcher */}
+      <div className="flex items-center rounded-[var(--radius-md)] border border-[var(--border-default)] overflow-hidden">
+        {themeOptions.map(({ value, icon: Icon }) => (
+          <button
+            key={value}
+            onClick={() => setTheme(value)}
+            className="h-7 w-7 flex items-center justify-center transition-all duration-[120ms]"
+            style={{
+              backgroundColor: theme === value ? 'var(--bg-subtle)' : 'transparent',
+              color: theme === value ? 'var(--text-primary)' : 'var(--text-tertiary)',
+            }}
+          >
+            <Icon style={{ width: 13, height: 13 }} />
+          </button>
+        ))}
+      </div>
+
+      {/* Notifications */}
+      <button
+        className="relative h-7 w-7 flex items-center justify-center rounded-[var(--radius-md)]
+                   hover:bg-[var(--bg-subtle)] transition-colors"
+        style={{ color: 'var(--text-secondary)' }}
+      >
+        <Bell style={{ width: 15, height: 15 }} />
+        <span
+          className="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full"
+          style={{ backgroundColor: 'var(--danger)' }}
+        />
+      </button>
+    </header>
+  );
+}
+```
+
+---
+
+### 7.3 Layout
+
+```tsx
+// src/components/layout/Layout.tsx
+import { useState } from 'react';
+import { Outlet } from 'react-router-dom';
+import { Sidebar } from './Sidebar';
+import { Header } from './Header';
+import { useAuth } from '@/hooks/useAuth';
+
+export function Layout() {
+  const [collapsed, setCollapsed] = useState(false);
+  const { user } = useAuth();
+
+  return (
+    <div className="flex h-screen overflow-hidden" style={{ backgroundColor: 'var(--bg-app)' }}>
+      <Sidebar
+        collapsed={collapsed}
+        onToggle={() => setCollapsed(c => !c)}
+        isAdmin={user?.role === 'admin'}
+      />
+      <div className="flex flex-col flex-1 overflow-hidden">
+        <Header />
+        <main className="flex-1 overflow-y-auto p-5">
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
+## 8. Page Typography Patterns
+
+Every page should follow this hierarchy:
+
+```tsx
+// Page shell pattern
+<div className="space-y-5">
+  {/* Page header */}
+  <div className="flex items-center justify-between">
+    <div>
+      <h1 style={{ fontSize: 20, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '-0.025em' }}>
+        Contacts
+      </h1>
+      <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2 }}>
+        Manage your contacts and leads
+      </p>
+    </div>
+    <Button variant="primary" size="sm" icon={<Plus />}>
+      Add Contact
+    </Button>
+  </div>
+
+  {/* Stats row */}
+  <div className="grid grid-cols-4 gap-3">
+    <StatsCard title="Total Contacts" value="2,841" change="+12%" />
+    {/* ... */}
+  </div>
+
+  {/* Main content */}
+  <Card padding="none">
+    {/* Table or content */}
+  </Card>
+</div>
+```
+
+### Typography Scale Reference
+
+| Element | Size | Weight | Color |
+|---|---|---|---|
+| Page Title | 20px | 600 | `--text-primary` |
+| Page Subtitle | 12px | 400 | `--text-secondary` |
+| Section Heading | 13px | 600 | `--text-primary` |
+| Card Title | 13px | 600 | `--text-primary` |
+| Body Text | 13px | 400 | `--text-primary` |
+| Secondary Text | 12px | 400 | `--text-secondary` |
+| Meta / Label | 11px | 500 | `--text-secondary` / uppercase |
+| Hint / Caption | 11px | 400 | `--text-tertiary` |
+| Table Header | 11px | 500 | `--text-secondary` / uppercase |
+| Table Cell | 13px | 400 | `--text-primary` |
+| Stat Value | 22–24px | 600 | `--text-primary` |
+| Badge Text | 10–11px | 500 | (variant-specific) |
+
+---
+
+## 9. Table Style Pattern
+
+```tsx
+// Standard table styling
+<div style={{ overflowX: 'auto' }}>
+  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+    <thead>
+      <tr style={{ borderBottom: '1px solid var(--border-default)' }}>
+        <th style={{
+          padding: '8px 16px',
+          textAlign: 'left',
+          fontSize: 11,
+          fontWeight: 500,
+          color: 'var(--text-secondary)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          whiteSpace: 'nowrap',
+          backgroundColor: 'var(--bg-subtle)',
+        }}>
+          Name
+        </th>
+        {/* more headers */}
+      </tr>
+    </thead>
+    <tbody>
+      {rows.map((row, i) => (
+        <tr
+          key={row.id}
+          style={{
+            borderBottom: '1px solid var(--border-default)',
+            backgroundColor: 'transparent',
+            transition: 'background-color 100ms',
+          }}
+          onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--bg-subtle)'}
+          onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+        >
+          <td style={{ padding: '9px 16px', color: 'var(--text-primary)', fontWeight: 500 }}>
+            {row.name}
+          </td>
+          {/* more cells */}
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+```
+
+---
+
+## 10. StatsCard Component
+
+```tsx
+// src/components/dashboard/StatsCard.tsx
+import { TrendingUp, TrendingDown } from 'lucide-react';
+import { Card } from '@/components/ui/Card';
+
+interface StatsCardProps {
+  title: string;
+  value: string | number;
+  change?: string;
+  changeType?: 'positive' | 'negative' | 'neutral';
+  icon?: React.ReactNode;
+  suffix?: string;
+}
+
+export function StatsCard({ title, value, change, changeType = 'positive', icon, suffix }: StatsCardProps) {
+  return (
+    <Card padding="md">
+      <div className="flex items-start justify-between mb-2">
+        <p style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          {title}
+        </p>
+        {icon && (
+          <div className="p-1.5 rounded-[var(--radius-md)]" style={{ backgroundColor: 'var(--bg-subtle)', color: 'var(--text-tertiary)' }}>
+            {icon}
+          </div>
+        )}
+      </div>
+      <div className="flex items-baseline gap-1.5">
+        <span style={{ fontSize: 24, fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '-0.03em', lineHeight: 1 }}>
+          {value}
+        </span>
+        {suffix && <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{suffix}</span>}
+      </div>
+      {change && (
+        <div className="flex items-center gap-1 mt-2">
+          {changeType === 'positive'
+            ? <TrendingUp style={{ width: 11, height: 11, color: 'var(--success)' }} />
+            : <TrendingDown style={{ width: 11, height: 11, color: 'var(--danger)' }} />
+          }
+          <span style={{
+            fontSize: 11,
+            fontWeight: 500,
+            color: changeType === 'positive' ? 'var(--success-text)' : 'var(--danger-text)',
+          }}>
+            {change}
+          </span>
+          <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>vs last month</span>
+        </div>
+      )}
+    </Card>
+  );
+}
+```
+
+---
+
+## 11. Deal Kanban Column Styling
+
+```tsx
+// src/components/deals/DealColumn.tsx — style reference
+
+// Column header
+<div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+  <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>
+    {columnTitle}
+  </span>
+  <span style={{
+    fontSize: 10,
+    fontWeight: 500,
+    padding: '2px 6px',
+    borderRadius: 999,
+    backgroundColor: 'var(--bg-muted)',
+    color: 'var(--text-tertiary)',
+  }}>
+    {count}
+  </span>
+  <span style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)' }}>
+    ${totalValue}
+  </span>
+</div>
+
+// Column body
+<div style={{
+  backgroundColor: 'var(--bg-subtle)',
+  borderRadius: 'var(--radius-xl)',
+  border: '1px solid var(--border-default)',
+  padding: 8,
+  minHeight: 480,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 6,
+}}>
+  {/* DealCards */}
+</div>
+
+// Deal card
+<div style={{
+  backgroundColor: 'var(--bg-base)',
+  borderRadius: 'var(--radius-lg)',
+  border: '1px solid var(--border-default)',
+  padding: '10px 12px',
+  cursor: 'grab',
+  transition: 'box-shadow 120ms, border-color 120ms',
+}}>
+  <p style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 6 }}>
+    {deal.title}
+  </p>
+  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+    <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>
+      ${deal.value.toLocaleString()}
+    </span>
+    <Badge variant="accent" size="sm" dot>{deal.probability}%</Badge>
+  </div>
+</div>
+```
+
+---
+
+## 12. Recharts Styling
+
+```tsx
+// Use these styles when building Recharts charts
+
+const chartTheme = {
+  grid: {
+    strokeDasharray: '3 3',
+    stroke: 'var(--border-default)',
+    vertical: false,
+  },
+  axis: {
+    tick: { fontSize: 11, fill: 'var(--text-tertiary)', fontFamily: 'var(--font-sans)' },
+    axisLine: { stroke: 'transparent' },
+    tickLine: { stroke: 'transparent' },
+  },
+  tooltip: {
+    contentStyle: {
+      backgroundColor: 'var(--bg-base)',
+      border: '1px solid var(--border-default)',
+      borderRadius: 'var(--radius-lg)',
+      fontSize: 12,
+      color: 'var(--text-primary)',
+      boxShadow: 'var(--shadow-lg)',
+    },
+    labelStyle: {
+      fontSize: 11,
+      fontWeight: 600,
+      color: 'var(--text-secondary)',
+      marginBottom: 4,
+    },
+  },
+  bar: {
+    radius: [4, 4, 0, 0],
+  },
+  colors: {
+    primary: '#2563EB',
+    secondary: '#93C5FD',
+    success: '#22C55E',
+    warning: '#F59E0B',
+    danger: '#EF4444',
+  },
+};
+
+// Example usage in SalesChart.tsx
+<BarChart data={data} barSize={20} barCategoryGap="35%">
+  <CartesianGrid {...chartTheme.grid} />
+  <XAxis {...chartTheme.axis} dataKey="month" />
+  <YAxis {...chartTheme.axis} />
+  <Tooltip {...chartTheme.tooltip} />
+  <Bar dataKey="revenue" fill={chartTheme.colors.primary} radius={chartTheme.bar.radius} />
+</BarChart>
+```
+
+---
+
+## 13. Motion / Animation Patterns
+
+```tsx
+// Page entrance — wrap page root with this
+import { motion } from 'framer-motion';
+
+const pageVariants = {
+  initial: { opacity: 0, y: 6 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -4 },
+};
+
+export function PageTransition({ children }: { children: React.ReactNode }) {
+  return (
+    <motion.div
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+// List stagger — for tables/card grids loading in
+const containerVariants = {
+  animate: { transition: { staggerChildren: 0.04 } },
+};
+const itemVariants = {
+  initial: { opacity: 0, y: 4 },
+  animate: { opacity: 1, y: 0 },
+};
+
+// Sidebar item hover scale (subtle)
+whileHover={{ scale: 1.01 }}
+whileTap={{ scale: 0.99 }}
+
+// Button press
+whileTap={{ scale: 0.97 }}
+```
+
+---
+
+## 14. Toast (react-hot-toast) Configuration
+
+```tsx
+// In main.tsx or App.tsx, configure Toaster:
+import { Toaster } from 'react-hot-toast';
+
+<Toaster
+  position="bottom-right"
+  gutter={8}
+  toastOptions={{
+    duration: 3500,
+    style: {
+      background: 'var(--bg-base)',
+      color: 'var(--text-primary)',
+      border: '1px solid var(--border-default)',
+      borderRadius: 'var(--radius-lg)',
+      fontSize: 13,
+      boxShadow: 'var(--shadow-lg)',
+      padding: '10px 14px',
+      maxWidth: 360,
+    },
+    success: {
+      iconTheme: { primary: '#22C55E', secondary: '#fff' },
+    },
+    error: {
+      iconTheme: { primary: '#EF4444', secondary: '#fff' },
+    },
+  }}
+/>
+```
+
+---
+
+## 15. Empty State Pattern
+
+```tsx
+// Use when no data is available
+<div style={{
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '48px 24px',
+  textAlign: 'center',
+}}>
+  <div style={{
+    width: 40,
+    height: 40,
+    borderRadius: 'var(--radius-xl)',
+    backgroundColor: 'var(--bg-subtle)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+    color: 'var(--text-tertiary)',
+  }}>
+    <Icon style={{ width: 18, height: 18 }} />
+  </div>
+  <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 4 }}>
+    No contacts yet
+  </p>
+  <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 16, maxWidth: 280 }}>
+    Add your first contact to start building your pipeline.
+  </p>
+  <Button variant="primary" size="sm" icon={<Plus />}>
+    Add Contact
+  </Button>
+</div>
+```
+
+---
+
+## 16. Avatar Component
+
+```tsx
+// For contacts, users — consistent avatar treatment
+function Avatar({ name, src, size = 'md' }: { name: string; src?: string; size?: 'sm' | 'md' | 'lg' }) {
+  const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+  const sizes = { sm: 24, md: 32, lg: 40 };
+  const fontSizes = { sm: 10, md: 12, lg: 14 };
+  const px = sizes[size];
+
+  // Consistent color from name
+  const colors = ['#2563EB', '#7C3AED', '#059669', '#D97706', '#DC2626', '#0284C7'];
+  const colorIndex = name.charCodeAt(0) % colors.length;
+  const bg = colors[colorIndex] + '20'; // 12% opacity
+  const fg = colors[colorIndex];
+
+  if (src) {
+    return <img src={src} alt={name} style={{ width: px, height: px, borderRadius: '50%', objectFit: 'cover' }} />;
+  }
+
+  return (
+    <div style={{
+      width: px, height: px, borderRadius: '50%',
+      backgroundColor: bg, color: fg,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontSize: fontSizes[size], fontWeight: 600, flexShrink: 0,
+    }}>
+      {initials}
+    </div>
+  );
+}
+```
+
+---
+
+## 17. Spacing Rules Summary
+
+| Context | Value |
+|---|---|
+| Page padding | `p-5` (20px) |
+| Card internal padding | `p-4` (16px) |
+| Form field gap | `gap-1` (4px) between label/input, `gap-4` between fields |
+| Section gap | `space-y-5` |
+| Grid gap (stats cards) | `gap-3` |
+| Table cell padding | `9px 16px` |
+| Sidebar nav item padding | `px-2.5 py-1.5` |
+| Button internal padding | `sm: px-2.5`, `md: px-3`, `lg: px-4` |
+
+---
+
+## 18. Quick Reference Checklist for the Implementing AI
+
+- [ ] Set `font-size: 13px` on `html` element
+- [ ] Use `DM Sans` as the primary font (load from Google Fonts)
+- [ ] Apply `var(--bg-app)` on `body`, `var(--bg-base)` on cards/panels
+- [ ] Apply `.dark` class to `<html>` when dark mode is active
+- [ ] All icon sizes: use `15px` for nav icons, `16px` for action icons, `13px` for inline icons
+- [ ] No text larger than `20px` except stat values (`24px`)
+- [ ] Every `border` uses `var(--border-default)` by default
+- [ ] Every `transition` uses `120ms` to `200ms` duration
+- [ ] Sidebar width: `220px` expanded, `52px` collapsed
+- [ ] Header height: `48px` (`h-12`)
+- [ ] Table headers: `11px`, uppercase, `--text-secondary`
+- [ ] Buttons never exceed `h-9` (36px)
+- [ ] Use `rounded-[var(--radius-md)]` (6px) for inputs/buttons, `rounded-[var(--radius-xl)]` (12px) for cards

@@ -15,6 +15,7 @@ import { contactsApi } from '../../api/contacts';
 import { usersApi } from '../../api/users';
 import { useToast } from '../../hooks/useToast';
 import { useAuth } from '../../hooks/useAuth';
+import { useCurrency } from '../../hooks/useCurrency';
 import type { Contact } from '../../types/contact';
 import type { User } from '../../types/user';
 import type { Option } from '../../components/ui/SearchableSelect';
@@ -45,6 +46,7 @@ export default function CreateDeal() {
   const navigate = useNavigate();
   const toast = useToast();
   const { user } = useAuth();
+  const { formatCurrency } = useCurrency();
   const [loading, setLoading] = useState(false);
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -209,6 +211,7 @@ export default function CreateDeal() {
               <Input
                 label="Amount"
                 type="number"
+                step="0.01"
                 placeholder="0.00"
                 error={errors.amount?.message}
                 leftIcon={<DollarSign size={18} />}
@@ -253,7 +256,7 @@ export default function CreateDeal() {
               </div>
               <div>
                 <p className="text-sm text-gray-500">Amount</p>
-                <p className="font-medium">${selectedAmount.toLocaleString()}</p>
+                <p className="font-medium">{formatCurrency(selectedAmount)}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Probability</p>
@@ -261,7 +264,7 @@ export default function CreateDeal() {
               </div>
               <div>
                 <p className="text-sm text-gray-500">Weighted Amount</p>
-                <p className="font-medium text-primary">${weightedAmount.toLocaleString()}</p>
+                <p className="font-medium text-primary">{formatCurrency(weightedAmount)}</p>
               </div>
             </div>
           </div>

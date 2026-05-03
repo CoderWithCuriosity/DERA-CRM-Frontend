@@ -1,4 +1,4 @@
-import { format, formatDistance, formatRelative } from 'date-fns';
+import { format, formatDistance } from 'date-fns';
 
 export function formatDate(date: string | Date, formatStr: string = 'MMM dd, yyyy'): string {
   return format(new Date(date), formatStr);

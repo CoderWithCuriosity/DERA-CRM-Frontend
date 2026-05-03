@@ -6,8 +6,9 @@ import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { dealsApi } from '../../api/deals';
 import type { DealDetailResponse } from '../../types/deal';
-import { formatCurrency, formatDate } from '../../utils/formatters';
+import { formatDate } from '../../utils/formatters';
 import { useToast } from '../../hooks/useToast';
+import { useCurrency } from '../../hooks/useCurrency';
 
 // Helper function to calculate weighted amount
 const calculateWeightedAmount = (amount: number, probability: number): number => {
@@ -18,6 +19,7 @@ export default function DealDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const toast = useToast();
+  const { formatCurrency } = useCurrency();
   const [deal, setDeal] = useState<DealDetailResponse['data']['deal'] | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);

@@ -1,3 +1,4 @@
+// src/pages/dashboard/Dashboard.tsx
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
@@ -15,6 +16,7 @@ import { RecentActivities } from '../../components/dashboard/RecentActivities';
 import { TopPerformers } from '../../components/dashboard/TopPerformers';
 import { dashboardApi } from '../../api/dashboard';
 import { usePolling } from '../../hooks/usePolling';
+import { useCurrency } from '../../hooks/useCurrency';
 import type { DashboardData, RawSalesChartData, RawTicketChartData } from '../../types/dashboard';
 import { cn } from '../../utils/cn';
 
@@ -23,6 +25,7 @@ export function Dashboard() {
   const [salesData, setSalesData] = useState<RawSalesChartData | null>(null);
   const [ticketData, setTicketData] = useState<RawTicketChartData | null>(null);
   const [loading, setLoading] = useState(true);
+  const { formatCurrency, currency } = useCurrency();
 
   const fetchDashboard = async () => {
     try {
@@ -53,7 +56,7 @@ export function Dashboard() {
     }
   };
 
-  usePolling(fetchDashboard, 30000); // Poll every 30 seconds
+  usePolling(fetchDashboard, 30000);
 
   useEffect(() => {
     Promise.all([
@@ -71,7 +74,6 @@ export function Dashboard() {
     );
   }
 
-  // Transform sales data for chart
   const salesChartData = salesData?.data ? {
     labels: salesData.data.map(item => item.month),
     won_deals: salesData.data.map(item => item.won),
@@ -93,7 +95,7 @@ export function Dashboard() {
     {
       title: 'Open Deals',
       value: data.summary.open_deals,
-      value2: `$${data.summary.total_pipeline_value.toLocaleString()}`,
+      value2: formatCurrency(data.summary.total_pipeline_value),
       icon: Target,
       color: 'from-purple-500 to-purple-600',
     },
@@ -114,13 +116,11 @@ export function Dashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-deep-ink">Dashboard</h1>
         <p className="text-gray-600 mt-1">Welcome back! Here's what's happening today.</p>
       </div>
 
-      {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => (
           <motion.div
@@ -134,25 +134,23 @@ export function Dashboard() {
         ))}
       </div>
 
-      {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <GlassCard className="p-6">
           <h2 className="text-lg font-semibold text-deep-ink mb-4">Sales Performance</h2>
           <SalesChart data={salesChartData} />
           <div className="mt-4 flex justify-between text-sm text-gray-600">
-            <span>Total Won: ${salesData.totals ? salesData.totals.won.toLocaleString() : 0}</span>
-            <span>Total Lost: ${salesData.totals ? salesData.totals.lost.toLocaleString() : 0}</span>
-            <span>Net: ${salesData.totals ? salesData.totals.net.toLocaleString(): 0}</span>
+            <span>Total Won: {formatCurrency(salesData.totals?.won || 0)}</span>
+            <span>Total Lost: {formatCurrency(salesData.totals?.lost || 0)}</span>
+            <span>Net: {formatCurrency(salesData.totals?.net || 0)}</span>
           </div>
         </GlassCard>
 
         <GlassCard className="p-6">
           <h2 className="text-lg font-semibold text-deep-ink mb-4">Pipeline Value</h2>
-          <PipelineChart data={data.pipeline_value_chart} />
+          <PipelineChart data={data.pipeline_value_chart} currency={currency.code} />
         </GlassCard>
       </div>
 
-      {/* Ticket Volume */}
       <GlassCard className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-deep-ink">Ticket Volume (Last {ticketData.days} Days)</h2>
@@ -167,7 +165,6 @@ export function Dashboard() {
             </div>
           </div>
         </div>
-        {/* Add your chart component here */}
         <div className="h-64 bg-blue-50/30 rounded-xl flex items-center justify-center">
           <p className="text-gray-500">Ticket volume chart will be displayed here</p>
         </div>
@@ -178,7 +175,6 @@ export function Dashboard() {
         </div>
       </GlassCard>
 
-      {/* Recent Activities & Top Performers */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <GlassCard className="p-6">
@@ -190,12 +186,11 @@ export function Dashboard() {
         <div>
           <GlassCard className="p-6">
             <h2 className="text-lg font-semibold text-deep-ink mb-4">Top Performers</h2>
-            <TopPerformers performers={data.top_performers} />
+            <TopPerformers performers={data.top_performers} currency={currency.code}/>
           </GlassCard>
         </div>
       </div>
 
-      {/* Task List */}
       <GlassCard className="p-6">
         <h2 className="text-lg font-semibold text-deep-ink mb-4">Upcoming Tasks</h2>
         <div className="space-y-3">

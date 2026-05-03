@@ -24,6 +24,7 @@ import EditTicket from './pages/tickets/EditTicket';
 import Activities from './pages/activities/Activities';
 import ActivityDetail from './pages/activities/ActivityDetail';
 import CreateActivity from './pages/activities/CreateActivity';
+import { Reports } from './pages/reports/Reports';
 import Campaigns from './pages/campaigns/Campaigns';
 import CampaignDetail from './pages/campaigns/CampaignDetail';
 import CreateCampaign from './pages/campaigns/CreateCampaign';
@@ -89,6 +90,9 @@ function App() {
           
           {/* Doucments */}
           <Route path="documents" element={<Documents />} />
+
+          {/* Reports */}
+          <Route path="reports" element={<Reports />} />
 
           {/* Deals */}
           <Route path="deals">

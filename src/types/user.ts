@@ -62,11 +62,13 @@ export interface UpdateProfileData {
   first_name?: string;
   last_name?: string;
   email?: string;
+  settings?: Partial<UserSettings>;
 }
 
 export interface ChangePasswordData {
   current_password: string;
   new_password: string;
+  settings?: Partial<UserSettings>;
 }
 
 export interface UserFilters {
