@@ -10,7 +10,6 @@ import {
   Mail,
   Settings,
   ChevronLeft,
-  ChevronRight,
   LogOut,
   BarChart3,
   FileText,
@@ -24,6 +23,7 @@ import {
 import { cn } from '../../utils/cn';
 import { useAuth } from '../../hooks/useAuth';
 import { messagesApi } from '../../api/messages';
+import { organizationApi } from '../../api/organization';
 
 interface NavItem {
   name: string;
@@ -33,7 +33,12 @@ interface NavItem {
   roles?: Array<'admin' | 'manager' | 'agent'>;
 }
 
-// Helper function to format badge display
+interface Organization {
+  id: number;
+  company_name: string;
+  company_logo: string | null;
+}
+
 const formatBadge = (count: number | undefined): string | null => {
   if (!count || count <= 0) return null;
   if (count > 99) return '99+';
@@ -41,39 +46,101 @@ const formatBadge = (count: number | undefined): string | null => {
   return count.toString();
 };
 
-// Helper function to get user initials
 const getUserInitials = (firstName: string, lastName: string): string => {
   const firstInitial = firstName?.[0] || '';
   const lastInitial = lastName?.[0] || '';
   return `${firstInitial}${lastInitial}`.toUpperCase();
 };
 
-// Helper function to check if avatar URL is valid
 const isValidAvatar = (avatar: string | null | undefined): boolean => {
   if (!avatar) return false;
-  if (avatar === 'null') return false;
-  if (avatar === 'undefined') return false;
-  if (avatar === '') return false;
-  // Check if it's a valid URL string
-  try {
-    new URL(avatar);
-    return true;
-  } catch {
-    return false;
-  }
+  if (avatar === 'null' || avatar === 'undefined' || avatar === '') return false;
+  try { new URL(avatar); return true; } catch { return false; }
 };
 
+interface NavItemProps {
+  to: string;
+  icon: React.ElementType;
+  label: string;
+  collapsed: boolean;
+  badge?: number;
+  isActive: boolean;
+  onClick?: () => void;
+}
+
+function NavItem({ to, icon: Icon, label, collapsed, badge, isActive, onClick }: NavItemProps) {
+  const badgeText = formatBadge(badge);
+  const hasBadge = badgeText !== null;
+
+  return (
+    <Link to={to} onClick={onClick}>
+      <div
+        className={cn(
+          'flex items-center gap-2.5 px-2.5 py-1.5 rounded-[var(--radius-md)]',
+          'transition-all duration-[120ms] cursor-pointer select-none group relative',
+          isActive
+            ? 'bg-[var(--sidebar-item-active)] text-[var(--sidebar-text-active)]'
+            : 'text-[var(--sidebar-text)] hover:bg-[var(--sidebar-item-hover)] hover:text-[var(--sidebar-text-active)]'
+        )}
+      >
+        <Icon
+          style={{
+            width: 15,
+            height: 15,
+            flexShrink: 0,
+            color: isActive ? 'var(--sidebar-icon-active)' : 'var(--sidebar-icon)',
+            transition: 'color 120ms',
+          }}
+        />
+        <AnimatePresence initial={false}>
+          {!collapsed && (
+            <motion.span
+              initial={{ opacity: 0, width: 0 }}
+              animate={{ opacity: 1, width: 'auto' }}
+              exit={{ opacity: 0, width: 0 }}
+              transition={{ duration: 0.15 }}
+              className="text-[13px] font-medium whitespace-nowrap overflow-hidden flex-1"
+            >
+              {label}
+            </motion.span>
+          )}
+        </AnimatePresence>
+        {hasBadge && !collapsed && (
+          <span className="ml-auto px-1.5 py-0.5 text-[10px] font-medium bg-[var(--danger)] text-white rounded-full min-w-5 text-center">
+            {badgeText}
+          </span>
+        )}
+        {hasBadge && collapsed && (
+          <div className="absolute -top-1 -right-1 w-5 h-5 bg-[var(--danger)] text-white text-[10px] font-medium flex items-center justify-center rounded-full">
+            {badgeText}
+          </div>
+        )}
+        {collapsed && (
+          <div className="absolute left-full ml-2 px-2 py-1 bg-[var(--bg-base)] text-[var(--text-primary)] text-[13px] rounded-[var(--radius-md)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-popover border border-[var(--border-default)]">
+            {label}
+            {hasBadge && badgeText && (
+              <span className="ml-2 px-1.5 py-0.5 text-[10px] bg-[var(--danger)] text-white rounded-full">
+                {badgeText}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+    </Link>
+  );
+}
+
 export function Sidebar() {
-  const [collapsed, setCollapsed] = useState(true);
+  const [collapsed, setCollapsed] = useState(false);
+  const [organization, setOrganization] = useState<Organization | null>(null);
+  const [logoError, setLogoError] = useState(false);
   const location = useLocation();
   const { user, logout } = useAuth();
   const [messageCount, setMessageCount] = useState(0);
   const [avatarError, setAvatarError] = useState(false);
 
-  // Fetch unread counts
   const fetchUnreadCounts = async () => {
     if (!user) return;
-    
     try {
       const messagesRes = await messagesApi.getUnreadCount();
       setMessageCount(messagesRes.data.unread_count);
@@ -82,18 +149,31 @@ export function Sidebar() {
     }
   };
 
+  const fetchOrganization = async () => {
+    try {
+      const response = await organizationApi.getSettings();
+      setOrganization(response.data);
+      setLogoError(false);
+    } catch (error) {
+      console.error('Failed to fetch organization:', error);
+    }
+  };
+
   useEffect(() => {
     fetchUnreadCounts();
+    fetchOrganization();
     const interval = setInterval(fetchUnreadCounts, 30000);
     return () => clearInterval(interval);
   }, [user]);
 
-  // Reset avatar error when user or avatar changes
   useEffect(() => {
     setAvatarError(false);
   }, [user?.avatar]);
 
-  // Define all navigation items with their role requirements
+  useEffect(() => {
+    setLogoError(false);
+  }, [organization?.company_logo]);
+
   const navigationItems: NavItem[] = [
     { name: 'Dashboard', path: '/', icon: LayoutDashboard, roles: ['admin', 'manager', 'agent'] },
     { name: 'Contacts', path: '/contacts', icon: Users, roles: ['admin', 'manager', 'agent'] },
@@ -112,119 +192,60 @@ export function Sidebar() {
     { name: 'Backups', path: '/admin/backups', icon: Database, roles: ['admin'] },
   ];
 
-  // Filter navigation based on user role
   const navigation = navigationItems.filter(item => {
     if (!user) return false;
     return item.roles?.includes(user.role);
   });
 
-  const hasRole = (role: 'admin' | 'manager' | 'agent') => user?.role === role;
-  const isAdmin = hasRole('admin');
-  const isManager = hasRole('manager');
-
   const mainNav = navigation.filter(item => 
     !item.path.startsWith('/settings') && !item.path.startsWith('/admin')
   );
-  
-  const settingsNav = navigation.filter(item => 
-    item.path.startsWith('/settings')
-  );
-  
-  const adminNav = navigation.filter(item => 
-    item.path.startsWith('/admin')
-  );
+  const settingsNav = navigation.filter(item => item.path.startsWith('/settings'));
+  const adminNav = navigation.filter(item => item.path.startsWith('/admin'));
 
-  const renderNavSection = (items: NavItem[], showTitle: boolean = false, title?: string) => {
-    if (items.length === 0) return null;
-
-    return (
-      <div className="mb-4">
-        {!collapsed && showTitle && title && (
-          <p className="px-4 mb-2 text-xs font-semibold text-blue-300 uppercase tracking-wider">
-            {title}
-          </p>
-        )}
-        {items.map((item) => {
-          const Icon = item.icon;
-          const isActive = location.pathname === item.path;
-          const badgeText = formatBadge(item.badge);
-          const hasBadge = badgeText !== null;
-
-          return (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={cn(
-                'flex items-center mx-2 px-3 py-2 rounded-xl transition-all duration-200 group relative',
-                isActive 
-                  ? 'bg-linear-to-r from-primary to-accent text-white' 
-                  : 'text-blue-200 hover:bg-blue-800/30 hover:text-white'
-              )}
-            >
-              <Icon size={20} />
-              <AnimatePresence mode="wait">
-                {!collapsed && (
-                  <motion.span
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -10 }}
-                    className="ml-3 flex-1"
-                  >
-                    {item.name}
-                  </motion.span>
-                )}
-              </AnimatePresence>
-              {hasBadge && !collapsed && (
-                <span className="ml-2 px-1.5 py-0.5 text-xs bg-red-500 text-white rounded-full min-w-5 text-center">
-                  {badgeText}
-                </span>
-              )}
-              {hasBadge && collapsed && (
-                <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs flex items-center justify-center rounded-full">
-                  {badgeText}
-                </div>
-              )}
-              {collapsed && (
-                <div className="absolute left-full ml-2 px-2 py-1 bg-deep-ink text-white text-sm rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50">
-                  {item.name}
-                  {hasBadge && badgeText && (
-                    <span className="ml-2 px-1.5 py-0.5 text-xs bg-red-500 text-white rounded-full">
-                      {badgeText}
-                    </span>
-                  )}
-                </div>
-              )}
-            </Link>
-          );
-        })}
-      </div>
-    );
-  };
-
-  // Determine if we should show the avatar image or fallback
   const hasValidAvatar = isValidAvatar(user?.avatar) && !avatarError;
   const userInitials = user ? getUserInitials(user.first_name || '', user.last_name || '') : 'U';
+
+  // Organization logo logic
+  const serverApiUrl = import.meta.env.VITE_API_URL || '';
+  const hasValidLogo = organization?.company_logo && !logoError;
+  const orgInitials = organization?.company_name?.slice(0, 2).toUpperCase() || 'DC';
 
   return (
     <motion.aside
       initial={false}
-      animate={{ width: collapsed ? 80 : 240 }}
-      className="h-screen bg-deep-ink text-white relative flex flex-col"
+      animate={{ width: collapsed ? 52 : 220 }}
+      transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+      className="flex flex-col h-screen overflow-hidden flex-shrink-0 bg-sidebar border-r border-[var(--sidebar-border)]"
     >
       {/* Logo */}
-      <div className="flex items-center justify-between p-4 border-b border-blue-800/30">
+      <div className="flex items-center justify-between px-3 h-12 border-b border-[var(--sidebar-border)] flex-shrink-0">
         <AnimatePresence mode="wait">
           {!collapsed && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="flex items-center space-x-2"
+              className="flex items-center gap-2"
             >
-              <div className="w-8 h-8 bg-linear-to-br from-primary to-accent rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">D</span>
+              {/* Logo image or fallback */}
+              <div className="w-6 h-6 rounded-[var(--radius-md)] flex items-center justify-center overflow-hidden bg-[var(--accent)]">
+                {hasValidLogo ? (
+                  <img 
+                    src={serverApiUrl.replace(/\/api$/, '') + organization.company_logo}
+                    alt={organization?.company_name || 'Logo'}
+                    className="w-full h-full object-cover"
+                    onError={() => setLogoError(true)}
+                  />
+                ) : (
+                  <span className="text-white text-[11px] font-bold">
+                    {orgInitials}
+                  </span>
+                )}
               </div>
-              <span className="font-bold text-xl">DERA CRM</span>
+              <span className="text-[13px] font-semibold tracking-[-0.02em] text-[var(--text-primary)]">
+                {organization?.company_name || 'DERA CRM'}
+              </span>
             </motion.div>
           )}
           {collapsed && (
@@ -232,53 +253,95 @@ export function Sidebar() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="w-8 h-8 bg-linear-to-br from-primary to-accent rounded-lg flex items-center justify-center mx-auto"
+              className="w-6 h-6 rounded-[var(--radius-md)] flex items-center justify-center overflow-hidden bg-[var(--accent)] mx-auto"
             >
-              <span className="text-white font-bold text-lg">D</span>
+              {hasValidLogo ? (
+                <img 
+                  src={serverApiUrl.replace(/\/api$/, '') + organization.company_logo}
+                  alt={organization?.company_name || 'Logo'}
+                  className="w-full h-full object-cover"
+                  onError={() => setLogoError(true)}
+                />
+              ) : (
+                <span className="text-white text-[11px] font-bold">
+                  {orgInitials}
+                </span>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="p-1.5 rounded-lg hover:bg-blue-800/50 transition-colors"
+          className="p-1 rounded-[var(--radius-md)] hover:bg-[var(--sidebar-item-hover)] transition-colors"
+          style={{ color: 'var(--sidebar-icon)' }}
         >
-          {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+          <motion.div animate={{ rotate: collapsed ? 180 : 0 }} transition={{ duration: 0.2 }}>
+            <ChevronLeft style={{ width: 14, height: 14 }} />
+          </motion.div>
         </button>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-4">
-        {renderNavSection(mainNav)}
-        
+      <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-0.5">
+        {mainNav.map((item) => (
+          <NavItem
+            key={item.path}
+            to={item.path}
+            icon={item.icon}
+            label={item.name}
+            collapsed={collapsed}
+            badge={item.badge}
+            isActive={location.pathname === item.path}
+          />
+        ))}
+
         {settingsNav.length > 0 && (
           <>
-            <div className="border-t border-blue-800/30 my-4" />
-            {renderNavSection(settingsNav, true, 'Settings')}
+            <div className="my-2 border-t border-[var(--sidebar-border)]" />
+            {settingsNav.map((item) => (
+              <NavItem
+                key={item.path}
+                to={item.path}
+                icon={item.icon}
+                label={item.name}
+                collapsed={collapsed}
+                isActive={location.pathname === item.path}
+              />
+            ))}
           </>
         )}
-        
+
         {adminNav.length > 0 && (
           <>
-            <div className="border-t border-blue-800/30 my-4" />
-            {renderNavSection(adminNav, true, 'Administration')}
+            <div className="my-2 border-t border-[var(--sidebar-border)]" />
+            {adminNav.map((item) => (
+              <NavItem
+                key={item.path}
+                to={item.path}
+                icon={item.icon}
+                label={item.name}
+                collapsed={collapsed}
+                isActive={location.pathname === item.path}
+              />
+            ))}
           </>
         )}
       </nav>
 
       {/* User Profile */}
-      <div className="border-t border-blue-800/30 p-4">
+      <div className="border-t border-[var(--sidebar-border)] p-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3 min-w-0">
-            <div className="w-10 h-10 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center shrink-0 overflow-hidden">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-7 h-7 rounded-full bg-[var(--accent-subtle)] flex items-center justify-center shrink-0 overflow-hidden">
               {hasValidAvatar ? (
                 <img 
                   src={user!.avatar!}
                   alt={`${user?.first_name || ''} ${user?.last_name || ''}`}
-                  className="w-full h-full rounded-full object-cover"
+                  className="w-full h-full object-cover"
                   onError={() => setAvatarError(true)}
                 />
               ) : (
-                <span className="text-white font-medium text-sm">
+                <span className="text-[11px] font-semibold text-[var(--accent-text)]">
                   {userInitials}
                 </span>
               )}
@@ -291,24 +354,12 @@ export function Sidebar() {
                   exit={{ opacity: 0 }}
                   className="flex-1 min-w-0"
                 >
-                  <p className="font-medium truncate">
+                  <p className="text-[12px] font-medium text-[var(--text-primary)] truncate">
                     {user?.first_name || ''} {user?.last_name || ''}
                   </p>
-                  <div className="flex items-center space-x-2">
-                    <p className="text-xs text-blue-300 capitalize truncate">
-                      {user?.role || 'User'}
-                    </p>
-                    {isAdmin && (
-                      <span className="px-1.5 py-0.5 bg-yellow-500/20 text-yellow-300 rounded text-[10px] font-medium whitespace-nowrap">
-                        Admin
-                      </span>
-                    )}
-                    {isManager && (
-                      <span className="px-1.5 py-0.5 bg-blue-500/20 text-blue-300 rounded text-[10px] font-medium whitespace-nowrap">
-                        Manager
-                      </span>
-                    )}
-                  </div>
+                  <p className="text-[11px] text-[var(--text-tertiary)] truncate capitalize">
+                    {user?.role || 'User'}
+                  </p>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -316,29 +367,18 @@ export function Sidebar() {
           {!collapsed && (
             <button
               onClick={logout}
-              className="p-2 rounded-lg hover:bg-blue-800/50 transition-colors text-blue-300 hover:text-white shrink-0"
-              title="Logout"
+              className="p-1 rounded-[var(--radius-md)] hover:bg-[var(--sidebar-item-hover)] transition-colors text-[var(--sidebar-icon)]"
             >
-              <LogOut size={18} />
+              <LogOut size={14} />
             </button>
           )}
         </div>
-
-        {/* Last login info - only when expanded */}
-        {!collapsed && user?.last_login && (
-          <p className="text-xs text-blue-400/60 mt-2 truncate">
-            Last login: {new Date(user.last_login).toLocaleDateString()}
-          </p>
-        )}
-
-        {/* Collapsed logout button */}
         {collapsed && (
           <button
             onClick={logout}
-            className="mt-3 w-full p-2 rounded-lg hover:bg-blue-800/50 transition-colors text-blue-300 hover:text-white flex justify-center"
-            title="Logout"
+            className="mt-2 w-full p-1.5 rounded-[var(--radius-md)] hover:bg-[var(--sidebar-item-hover)] transition-colors text-[var(--sidebar-icon)] flex justify-center"
           >
-            <LogOut size={18} />
+            <LogOut size={14} />
           </button>
         )}
       </div>

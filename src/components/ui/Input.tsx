@@ -4,48 +4,58 @@ import { cn } from '../../utils/cn';
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
+  hint?: string;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, label, error, leftIcon, rightIcon, type = 'text', ...props }, ref) => {
+  ({ className, label, error, hint, leftIcon, rightIcon, type = 'text', id, ...props }, ref) => {
+    const inputId = id ?? label?.toLowerCase().replace(/\s/g, '-');
+
     return (
-      <div className="w-full">
+      <div className="flex flex-col gap-1 w-full">
         {label && (
-          <label className="block text-sm font-medium text-deep-ink mb-1">
+          <label
+            htmlFor={inputId}
+            className="text-[11px] font-medium uppercase tracking-wide text-[var(--text-secondary)]"
+          >
             {label}
           </label>
         )}
-        <div className="relative">
+        <div className="relative flex items-center">
           {leftIcon && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+            <span className="absolute left-2.5 flex items-center text-[var(--text-tertiary)]" style={{ width: 14, height: 14 }}>
               {leftIcon}
-            </div>
+            </span>
           )}
           <input
+            id={inputId}
             type={type}
+            ref={ref}
             className={cn(
-              'w-full px-4 py-2 bg-white/70 backdrop-blur-sm border rounded-xl focus:outline-none focus:ring-2 transition-all duration-200',
-              leftIcon && 'pl-10',
-              rightIcon && 'pr-10',
-              error
-                ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
-                : 'border-blue-100 focus:ring-primary-500 focus:border-primary-500',
+              'w-full h-8 rounded-[var(--radius-md)] border border-[var(--border-default)]',
+              'bg-[var(--bg-base)] text-[var(--text-primary)]',
+              'text-[13px] font-normal',
+              'placeholder:text-[var(--text-tertiary)]',
+              'transition-all duration-[120ms]',
+              'hover:border-[var(--border-strong)]',
+              'focus:outline-none focus:border-[var(--border-focus)] focus:ring-2 focus:ring-[var(--border-focus)] focus:ring-opacity-20',
+              leftIcon ? 'pl-8' : 'px-3',
+              rightIcon ? 'pr-8' : 'px-3',
+              error && 'border-[var(--danger)] focus:border-[var(--danger)] focus:ring-[var(--danger)]',
               className
             )}
-            ref={ref}
             {...props}
           />
           {rightIcon && (
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+            <span className="absolute right-2.5 flex items-center text-[var(--text-tertiary)]" style={{ width: 14, height: 14 }}>
               {rightIcon}
-            </div>
+            </span>
           )}
         </div>
-        {error && (
-          <p className="mt-1 text-sm text-red-600">{error}</p>
-        )}
+        {error && <p className="text-[11px] text-[var(--danger-text)]">{error}</p>}
+        {hint && !error && <p className="text-[11px] text-[var(--text-tertiary)]">{hint}</p>}
       </div>
     );
   }

@@ -154,7 +154,7 @@ export default function Profile() {
       <GlassCard className="p-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6 mb-6">
           <div className="relative group">
-            <div className="w-24 h-24 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center text-white text-3xl font-bold overflow-hidden">
+            <div className="w-24 h-24 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center text-[var(--sidebar-icon-active)] text-3xl font-bold overflow-hidden">
               {user?.avatar ? (
                 <img 
                   src={user.avatar} 

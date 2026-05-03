@@ -4,58 +4,69 @@ import type { HTMLMotionProps } from 'framer-motion';
 import { cn } from '../../utils/cn';
 import { Loader2 } from 'lucide-react';
 
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'outline';
+type ButtonSize = 'xs' | 'sm' | 'md' | 'lg';
+
 interface ButtonProps extends HTMLMotionProps<'button'> {
   children: React.ReactNode;
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: ButtonVariant;
+  size?: ButtonSize;
   loading?: boolean;
   fullWidth?: boolean;
+  icon?: React.ReactNode;
+  iconRight?: React.ReactNode;
   className?: string;
 }
 
+const variants: Record<ButtonVariant, string> = {
+  primary:   'bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] shadow-sm active:scale-[0.98]',
+  secondary: 'bg-[var(--bg-subtle)] text-[var(--text-primary)] hover:bg-[var(--bg-muted)] border border-[var(--border-default)]',
+  ghost:     'bg-transparent text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)]',
+  danger:    'bg-[var(--danger)] text-white hover:opacity-90 shadow-sm active:scale-[0.98]',
+  outline:   'bg-transparent border border-[var(--border-strong)] text-[var(--text-primary)] hover:bg-[var(--bg-subtle)]',
+};
+
+const sizes: Record<ButtonSize, string> = {
+  xs: 'h-6 px-2 text-[11px] gap-1 rounded-[var(--radius-sm)]',
+  sm: 'h-7 px-2.5 text-[12px] gap-1.5 rounded-[var(--radius-md)]',
+  md: 'h-8 px-3 text-[13px] gap-2 rounded-[var(--radius-md)]',
+  lg: 'h-9 px-4 text-[14px] gap-2 rounded-[var(--radius-lg)]',
+};
+
 export function Button({
   children,
-  variant = 'primary',
+  variant = 'secondary',
   size = 'md',
   loading = false,
   fullWidth = false,
+  icon,
+  iconRight,
   className = '',
   disabled,
   ...props
 }: ButtonProps) {
-  const baseClasses = 'inline-flex items-center justify-center font-medium rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2';
-  
-  const variants = {
-    primary: 'bg-primary text-white hover:bg-primary-600 focus:ring-primary-500 disabled:bg-primary-300',
-    secondary: 'bg-blue-50 text-primary-700 hover:bg-blue-100 focus:ring-primary-500 disabled:bg-blue-100 disabled:text-primary-400',
-    outline: 'border-2 border-primary text-primary hover:bg-blue-50 focus:ring-primary-500 disabled:border-primary-300 disabled:text-primary-300',
-    ghost: 'text-primary-700 hover:bg-blue-50 focus:ring-primary-500 disabled:text-primary-300',
-    danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 disabled:bg-red-300',
-    success: 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500 disabled:bg-green-300', 
-  };
-
-  const sizes = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2 text-base',
-    lg: 'px-6 py-3 text-lg',
-  };
-
   return (
     <motion.button
-      whileTap={{ scale: 0.98 }}
+      whileTap={{ scale: 0.97 }}
+      disabled={disabled || loading}
       className={cn(
-        baseClasses,
+        'inline-flex items-center justify-center font-medium select-none',
+        'transition-all duration-[120ms] ease-out',
+        'focus-visible:outline-2 focus-visible:outline-[var(--border-focus)] focus-visible:outline-offset-2',
+        'disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none',
+        fullWidth && 'w-full',
         variants[variant],
         sizes[size],
-        fullWidth && 'w-full',
-        loading && 'cursor-not-allowed opacity-70',
         className
       )}
-      disabled={disabled || loading}
       {...props}
     >
-      {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+      {loading
+        ? <Loader2 className="animate-spin" style={{ width: 13, height: 13 }} />
+        : icon && <span className="flex items-center" style={{ width: 14, height: 14 }}>{icon}</span>
+      }
       {children}
+      {iconRight && <span className="flex items-center" style={{ width: 14, height: 14 }}>{iconRight}</span>}
     </motion.button>
   );
 }

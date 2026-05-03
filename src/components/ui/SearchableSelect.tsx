@@ -111,24 +111,23 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
     return (
         <div className="w-full" ref={containerRef}>
             {label && (
-                <label className="block text-sm font-medium text-deep-ink mb-1">
+                <label className="block text-[11px] font-medium uppercase tracking-wide text-[var(--text-secondary)] mb-1">
                     {label}
-                    {required && <span className="text-red-500 ml-1">*</span>}
+                    {required && <span className="text-[var(--danger)] ml-1">*</span>}
                 </label>
             )}
 
             <div className="relative">
-                {/* Select Button */}
                 <button
                     type="button"
                     onClick={() => !disabled && setIsOpen(!isOpen)}
                     className={cn(
-                        'w-full px-4 py-2 bg-white/70 backdrop-blur-sm border rounded-xl',
-                        'focus:outline-none focus:ring-2 transition-all duration-200',
+                        'w-full h-8 px-3 bg-[var(--bg-base)] border rounded-[var(--radius-md)]',
+                        'focus:outline-none focus:ring-2 transition-all duration-[120ms]',
                         'text-left flex items-center justify-between',
                         error
-                            ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
-                            : 'border-blue-100 focus:ring-primary-500 focus:border-primary-500',
+                            ? 'border-[var(--danger)] focus:ring-[var(--danger)]'
+                            : 'border-[var(--border-default)] hover:border-[var(--border-strong)] focus:border-[var(--border-focus)] focus:ring-[var(--border-focus)] focus:ring-opacity-20',
                         disabled && 'opacity-50 cursor-not-allowed',
                         className
                     )}
@@ -137,30 +136,28 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                     {selectedOption ? (
                         <div className="flex items-center space-x-2">
                             {selectedOption.avatar ? (
-                                <img src={selectedOption.avatar} alt="" className="w-6 h-6 rounded-full" />
+                                <img src={selectedOption.avatar} alt="" className="w-5 h-5 rounded-full" />
                             ) : selectedOption.initials ? (
-                                <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-xs font-medium text-primary">
+                                <div className="w-5 h-5 rounded-full bg-[var(--accent-subtle)] flex items-center justify-center text-[10px] font-medium text-[var(--accent-text)]">
                                     {selectedOption.initials}
                                 </div>
                             ) : null}
-                            <span>{selectedOption.label}</span>
+                            <span className="text-[13px] text-[var(--text-primary)]">{selectedOption.label}</span>
                             {selectedOption.sublabel && (
-                                <span className="text-sm text-gray-500">{selectedOption.sublabel}</span>
+                                <span className="text-[11px] text-[var(--text-tertiary)]">{selectedOption.sublabel}</span>
                             )}
                         </div>
                     ) : (
-                        <span className="text-gray-400">{placeholder}</span>
+                        <span className="text-[13px] text-[var(--text-tertiary)]">{placeholder}</span>
                     )}
-                    <ChevronDown size={18} className={cn('text-gray-400 transition-transform', isOpen && 'transform rotate-180')} />
+                    <ChevronDown size={14} className={cn('text-[var(--text-tertiary)] transition-transform', isOpen && 'transform rotate-180')} />
                 </button>
 
-                {/* Dropdown */}
                 {isOpen && (
-                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
-                        {/* Search Input */}
-                        <div className="p-2 border-b border-gray-100">
+                    <div className="absolute z-50 w-full mt-1 bg-[var(--bg-base)] border border-[var(--border-default)] rounded-[var(--radius-lg)] shadow-lg overflow-hidden">
+                        <div className="p-2 border-b border-[var(--border-default)]">
                             <div className="relative">
-                                <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                <Search size={13} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[var(--text-tertiary)]" />
                                 <input
                                     ref={searchInputRef}
                                     type="text"
@@ -168,20 +165,19 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                     onKeyDown={handleKeyDown}
                                     placeholder="Type to search..."
-                                    className="w-full pl-9 pr-8 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                    className="w-full pl-9 pr-8 py-1.5 text-[13px] border border-[var(--border-default)] rounded-[var(--radius-md)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)] bg-[var(--bg-base)] text-[var(--text-primary)]"
                                 />
                                 {searchTerm && (
                                     <button
                                         onClick={() => setSearchTerm('')}
-                                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                        className="absolute right-2 top-1/2 transform -translate-y-1/2 text-[var(--text-tertiary)] hover:text-[var(--text-secondary)]"
                                     >
-                                        <X size={14} />
+                                        <X size={12} />
                                     </button>
                                 )}
                             </div>
                         </div>
 
-                        {/* Options */}
                         <div className="max-h-60 overflow-y-auto">
                             {filteredOptions.length > 0 ? (
                                 filteredOptions.map((option, index) => (
@@ -196,32 +192,32 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
                                             setSearchTerm('');
                                         }}
                                         className={cn(
-                                            'px-4 py-2 cursor-pointer hover:bg-primary-50 transition-colors',
-                                            option.value === value && 'bg-primary-50 text-primary-700',
-                                            highlightedIndex === index && 'bg-primary-50'
+                                            'px-3 py-2 cursor-pointer hover:bg-[var(--bg-subtle)] transition-colors',
+                                            option.value === value && 'bg-[var(--accent-subtle)] text-[var(--accent-text)]',
+                                            highlightedIndex === index && 'bg-[var(--bg-subtle)]'
                                         )}
                                     >
                                         <div className="flex items-center space-x-2">
                                             {option.avatar ? (
                                                 <img src={option.avatar} alt="" className="w-6 h-6 rounded-full" />
                                             ) : option.initials ? (
-                                                <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-xs font-medium text-primary">
+                                                <div className="w-6 h-6 rounded-full bg-[var(--accent-subtle)] flex items-center justify-center text-[10px] font-medium text-[var(--accent-text)]">
                                                     {option.initials}
                                                 </div>
                                             ) : null}
                                             <div>
-                                                <div className="text-sm font-medium text-deep-ink">
+                                                <div className="text-[13px] font-medium text-[var(--text-primary)]">
                                                     {option.label}
                                                 </div>
                                                 {option.sublabel && (
-                                                    <div className="text-xs text-gray-500">{option.sublabel}</div>
+                                                    <div className="text-[11px] text-[var(--text-tertiary)]">{option.sublabel}</div>
                                                 )}
                                             </div>
                                         </div>
                                     </div>
                                 ))
                             ) : (
-                                <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                                <div className="px-3 py-3 text-[13px] text-[var(--text-tertiary)] text-center">
                                     No results found
                                 </div>
                             )}
@@ -231,7 +227,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
             </div>
 
             {error && (
-                <p className="mt-1 text-sm text-red-600">{error}</p>
+                <p className="mt-1 text-[11px] text-[var(--danger-text)]">{error}</p>
             )}
         </div>
     );

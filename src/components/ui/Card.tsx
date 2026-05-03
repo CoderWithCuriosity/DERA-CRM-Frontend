@@ -6,24 +6,34 @@ import { cn } from '../../utils/cn';
 interface CardProps extends HTMLMotionProps<'div'> {
   children: React.ReactNode;
   className?: string;
-  glass?: boolean;
+  padding?: 'none' | 'sm' | 'md' | 'lg';
   hover?: boolean;
 }
+
+const paddings = {
+  none: '',
+  sm: 'p-3',
+  md: 'p-4',
+  lg: 'p-5',
+};
 
 export function Card({ 
   children, 
   className = '', 
-  glass = false,
-  hover = true,
+  padding = 'md',
+  hover = false,
   ...props 
 }: CardProps) {
   return (
     <motion.div
-      whileHover={hover ? { y: -4, transition: { duration: 0.2 } } : undefined}
+      whileHover={hover ? { y: -2 } : undefined}
+      transition={{ duration: 0.12 }}
       className={cn(
-        'rounded-2xl shadow-sm transition-all duration-300',
-        glass ? 'bg-white/70 backdrop-blur-md border border-blue-100/50' : 'bg-white border border-gray-100',
-        hover && 'hover:shadow-blue-200/40',
+        'rounded-[var(--radius-xl)] border border-[var(--border-default)]',
+        'bg-[var(--bg-base)]',
+        'transition-all duration-[120ms]',
+        hover && 'hover:border-[var(--border-strong)] hover:shadow-[var(--shadow-md)] cursor-pointer',
+        paddings[padding],
         className
       )}
       {...props}
@@ -34,3 +44,22 @@ export function Card({
 }
 
 Card.displayName = 'Card';
+
+export function CardHeader({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div className={cn('flex items-center justify-between mb-3', className)} {...props}>
+      {children}
+    </div>
+  );
+}
+
+export function CardTitle({ className, children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) {
+  return (
+    <h3
+      className={cn('text-[13px] font-semibold tracking-[-0.01em] text-[var(--text-primary)]', className)}
+      {...props}
+    >
+      {children}
+    </h3>
+  );
+}

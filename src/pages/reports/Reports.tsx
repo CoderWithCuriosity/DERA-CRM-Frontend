@@ -574,7 +574,7 @@ export function Reports() {
               }
               
               return (
-                <div key={activity.id} className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">
+                <div key={activity.id} className="flex items-center space-x-3 p-3 unded-lg">
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${iconBg}`}>
                     <Activity size={18} className={iconColor} />
                   </div>

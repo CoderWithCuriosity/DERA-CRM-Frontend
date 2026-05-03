@@ -200,7 +200,7 @@ export default function Users() {
                 users.map((user, idx) => {
                   // Check if this user can be impersonated
                   const canImpersonate = isAdmin && user.role !== 'admin' && !isImpersonating;
-                  
+                  void canImpersonate;
                   return (
                     <motion.tr
                       key={user?.id || idx}
@@ -211,7 +211,7 @@ export default function Users() {
                     >
                       <td className="p-4">
                         <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center text-white text-sm font-medium">
+                          <div className="w-8 h-8 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center text-[var(--sidebar-icon-active)] text-sm font-medium">
                             {getInitials(user)}
                           </div>
                           <div>

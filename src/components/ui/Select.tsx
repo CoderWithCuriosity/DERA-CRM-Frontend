@@ -1,4 +1,4 @@
-import  { forwardRef } from 'react';
+import { forwardRef } from 'react';
 import type { SelectHTMLAttributes } from 'react';
 import { cn } from '../../utils/cn';
 import { ChevronDown } from 'lucide-react';
@@ -10,41 +10,49 @@ export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 }
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
-  ({ className, label, error, children, options, ...props }, ref) => {
+  ({ className, label, error, children, options, id, ...props }, ref) => {
+    const selectId = id ?? label?.toLowerCase().replace(/\s/g, '-');
+
     return (
-      <div className="w-full">
+      <div className="flex flex-col gap-1 w-full">
         {label && (
-          <label className="block text-sm font-medium text-deep-ink mb-1">
+          <label
+            htmlFor={selectId}
+            className="text-[11px] font-medium uppercase tracking-wide text-[var(--text-secondary)]"
+          >
             {label}
           </label>
         )}
         <div className="relative">
           <select
+            id={selectId}
+            ref={ref}
             className={cn(
-              'w-full px-4 py-2 bg-white/70 backdrop-blur-sm border rounded-xl focus:outline-none focus:ring-2 transition-all duration-200 appearance-none',
-              error
-                ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
-                : 'border-blue-100 focus:ring-primary-500 focus:border-primary-500',
+              'w-full h-8 rounded-[var(--radius-md)] border border-[var(--border-default)]',
+              'bg-[var(--bg-base)] text-[var(--text-primary)]',
+              'text-[13px] pl-3 pr-8 appearance-none',
+              'transition-all duration-[120ms]',
+              'hover:border-[var(--border-strong)]',
+              'focus:outline-none focus:border-[var(--border-focus)] focus:ring-2 focus:ring-[var(--border-focus)] focus:ring-opacity-20',
+              error && 'border-[var(--danger)]',
               className
             )}
-            ref={ref}
             {...props}
           >
             {options ? (
-              options.map(option => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
+              options.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))
             ) : (
               children
             )}
           </select>
-          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
+          <ChevronDown
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"
+            style={{ width: 12, height: 12, color: 'var(--text-tertiary)' }}
+          />
         </div>
-        {error && (
-          <p className="mt-1 text-sm text-red-600">{error}</p>
-        )}
+        {error && <p className="text-[11px] text-[var(--danger-text)]">{error}</p>}
       </div>
     );
   }

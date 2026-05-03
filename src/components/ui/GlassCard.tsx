@@ -16,9 +16,9 @@ export function GlassCard({
   ...props 
 }: GlassCardProps) {
   const intensityClasses = {
-    light: 'bg-white/50 backdrop-blur-sm',
-    medium: 'bg-white/70 backdrop-blur-md',
-    heavy: 'bg-white/90 backdrop-blur-lg',
+    light: 'bg-[var(--bg-base)]/50 backdrop-blur-sm',
+    medium: 'bg-[var(--bg-base)]/70 backdrop-blur-md',
+    heavy: 'bg-[var(--bg-base)]/90 backdrop-blur-lg',
   };
 
   return (
@@ -27,7 +27,7 @@ export function GlassCard({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       className={cn(
-        'rounded-2xl border border-blue-100/50 shadow-lg',
+        'rounded-[var(--radius-xl)] border border-[var(--border-default)] shadow-md',
         intensityClasses[intensity],
         className
       )}

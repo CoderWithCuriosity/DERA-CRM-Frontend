@@ -28,7 +28,7 @@ const activityColors = {
 export function RecentActivities({ activities }: RecentActivitiesProps) {
   if (activities.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500">
+      <div className="text-center py-8 text-gray-300">
         No recent activities
       </div>
     );

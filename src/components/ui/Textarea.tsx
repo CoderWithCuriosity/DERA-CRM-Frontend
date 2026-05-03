@@ -5,32 +5,42 @@ import { cn } from '../../utils/cn';
 export interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
   error?: string;
+  hint?: string;
 }
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className, label, error, rows = 4, ...props }, ref) => {
+  ({ className, label, error, hint, rows = 4, id, ...props }, ref) => {
+    const textareaId = id ?? label?.toLowerCase().replace(/\s/g, '-');
+
     return (
-      <div className="w-full">
+      <div className="flex flex-col gap-1 w-full">
         {label && (
-          <label className="block text-sm font-medium text-deep-ink mb-1">
+          <label
+            htmlFor={textareaId}
+            className="text-[11px] font-medium uppercase tracking-wide text-[var(--text-secondary)]"
+          >
             {label}
           </label>
         )}
         <textarea
+          id={textareaId}
           rows={rows}
+          ref={ref}
           className={cn(
-            'w-full px-4 py-2 bg-white/70 backdrop-blur-sm border rounded-xl focus:outline-none focus:ring-2 transition-all duration-200 resize-y',
-            error
-              ? 'border-red-300 focus:ring-red-500 focus:border-red-500'
-              : 'border-blue-100 focus:ring-primary-500 focus:border-primary-500',
+            'w-full rounded-[var(--radius-md)] border border-[var(--border-default)]',
+            'bg-[var(--bg-base)] text-[var(--text-primary)]',
+            'text-[13px] px-3 py-2 resize-y min-h-[80px]',
+            'placeholder:text-[var(--text-tertiary)]',
+            'transition-all duration-[120ms]',
+            'hover:border-[var(--border-strong)]',
+            'focus:outline-none focus:border-[var(--border-focus)] focus:ring-2 focus:ring-[var(--border-focus)] focus:ring-opacity-20',
+            error && 'border-[var(--danger)]',
             className
           )}
-          ref={ref}
           {...props}
         />
-        {error && (
-          <p className="mt-1 text-sm text-red-600">{error}</p>
-        )}
+        {error && <p className="text-[11px] text-[var(--danger-text)]">{error}</p>}
+        {hint && !error && <p className="text-[11px] text-[var(--text-tertiary)]">{hint}</p>}
       </div>
     );
   }
