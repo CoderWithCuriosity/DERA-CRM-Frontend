@@ -176,7 +176,7 @@ export function Messages() {
                 <Inbox size={18} />
                 <span className="flex-1 text-left">Inbox</span>
                 {unreadCount > 0 && (
-                  <Badge variant="primary" size="sm">{unreadCount}</Badge>
+                  <Badge variant="accent" size="sm">{unreadCount}</Badge>
                 )}
               </button>
               <button
@@ -211,6 +211,7 @@ export function Messages() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 leftIcon={<Search size={18} />}
+                className='pl-8'
               />
             </div>
 

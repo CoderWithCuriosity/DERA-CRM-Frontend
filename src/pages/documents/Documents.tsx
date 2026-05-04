@@ -66,11 +66,11 @@ export function Documents() {
   // Load attachments - ONLY when upload/delete happens or contacts change
   const loadAttachments = async () => {
     if (contacts.length === 0) return;
-    
+
     setLoading(true);
     try {
       let allAttachments: ContactAttachment[] = [];
-      
+
       for (const contact of contacts) {
         try {
           const attachmentsRes = await attachmentsApi.getAttachments(contact.id);
@@ -87,7 +87,7 @@ export function Documents() {
           console.error(`Failed to fetch attachments for contact ${contact.id}:`, error);
         }
       }
-      
+
       setAttachments(allAttachments);
       setFilteredAttachments(allAttachments);
       setHasLoaded(true);
@@ -109,7 +109,7 @@ export function Documents() {
   // Filter attachments (no API calls)
   useEffect(() => {
     let filtered = [...attachments];
-    
+
     if (search.trim()) {
       const searchLower = search.toLowerCase();
       filtered = filtered.filter(att =>
@@ -119,17 +119,17 @@ export function Documents() {
         (att as any).contact_company?.toLowerCase().includes(searchLower)
       );
     }
-    
+
     if (fileTypeFilter !== 'all') {
       filtered = filtered.filter(att => att.file_type === fileTypeFilter);
     }
-    
+
     setFilteredAttachments(filtered);
   }, [search, fileTypeFilter, attachments]);
 
   const handleDelete = async () => {
     if (!attachmentToDelete) return;
-    
+
     setDeleting(true);
     try {
       await attachmentsApi.deleteAttachment(attachmentToDelete.contact_id, attachmentToDelete.id);
@@ -156,7 +156,7 @@ export function Documents() {
       toast.error('Please select a contact');
       return;
     }
-    
+
     setUploading(true);
     try {
       await attachmentsApi.uploadAttachment(uploadContactId, uploadFile, uploadDescription || undefined);
@@ -188,9 +188,9 @@ export function Documents() {
     return <div className={`${iconClass} bg-gray-100 text-gray-600`}><FileText size={24} /></div>;
   };
 
-  const getFileBadge = (fileType: string) => {
-    const variants: Record<string, 'primary' | 'success' | 'warning' | 'danger' | 'info'> = {
-      image: 'primary',
+  const getFileBadge = (fileType: string): 'default' | 'success' | 'warning' | 'danger' | 'info' => {
+    const variants: Record<string, 'default' | 'success' | 'warning' | 'danger' | 'info'> = {
+      image: 'default',
       video: 'info',
       audio: 'success',
       document: 'warning',
@@ -279,6 +279,7 @@ export function Documents() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               leftIcon={<Search size={18} />}
+              className='pl-8'
             />
           </div>
           <div className="flex items-center space-x-2 overflow-x-auto pb-2 md:pb-0">
@@ -287,11 +288,10 @@ export function Documents() {
               <button
                 key={option.value}
                 onClick={() => setFileTypeFilter(option.value)}
-                className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg text-sm whitespace-nowrap transition-colors ${
-                  fileTypeFilter === option.value
+                className={`flex items-center space-x-1 px-3 py-1.5 rounded-lg text-sm whitespace-nowrap transition-colors ${fileTypeFilter === option.value
                     ? 'bg-primary text-white'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
+                  }`}
               >
                 {option.icon}
                 <span>{option.label}</span>

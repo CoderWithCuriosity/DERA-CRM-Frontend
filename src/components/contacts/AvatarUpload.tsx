@@ -109,7 +109,7 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
     <div className="flex flex-col items-center space-y-3">
       <div className="relative group">
         {/* Avatar Display */}
-        <div className="w-24 h-24 rounded-full overflow-hidden bg-linear-to-br from-primary to-accent flex items-center justify-center">
+        <div className="w-24 h-24 rounded-full overflow-hidden bg-[var(--accent)] flex items-center justify-center">
           {shouldShowImage ? (
             <img
               src={previewUrl || currentAvatar || ''}
@@ -123,7 +123,7 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
         </div>
 
         {/* Upload Overlay */}
-        <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute inset-0 bg-[var(--bg-overlay)] rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
           <input
             ref={fileInputRef}
             type="file"
@@ -135,15 +135,15 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
           />
           <label
             htmlFor="avatar-upload"
-            className="cursor-pointer p-2 bg-white rounded-full hover:bg-gray-100 transition-colors"
+            className="cursor-pointer p-2 bg-[var(--bg-base)] rounded-full hover:bg-[var(--bg-subtle)] transition-colors"
           >
-            <Camera size={18} className="text-gray-700" />
+            <Camera size={18} className="text-[var(--text-secondary)]" />
           </label>
         </div>
 
         {/* Loading Spinner */}
         {(uploading || deleting) && (
-          <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
+          <div className="absolute inset-0 bg-[var(--bg-overlay)] rounded-full flex items-center justify-center">
             <Loader size={24} className="text-white animate-spin" />
           </div>
         )}
@@ -151,14 +151,14 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
 
       {/* Error Message */}
       {error && (
-        <p className="text-sm text-red-600">{error}</p>
+        <p className="text-[13px] text-[var(--danger-text)]">{error}</p>
       )}
 
       {/* Actions */}
       {currentAvatar && !uploading && !deleting && !imageError && (
         <button
           onClick={handleDelete}
-          className="text-sm text-red-600 hover:text-red-700 flex items-center"
+          className="text-[13px] text-[var(--danger-text)] hover:text-[var(--danger)] flex items-center transition-colors"
         >
           <Trash2 size={14} className="mr-1" />
           Remove
@@ -167,11 +167,11 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
 
       {/* Show retry message if image failed to load */}
       {imageError && currentAvatar && !uploading && !deleting && (
-        <div className="text-sm text-amber-600 flex items-center">
+        <div className="text-[13px] text-[var(--warning-text)] flex items-center">
           <span>Failed to load image</span>
           <button
             onClick={() => setImageError(false)}
-            className="ml-2 text-primary hover:text-primary-dark underline"
+            className="ml-2 text-[var(--accent)] hover:text-[var(--accent-hover)] underline transition-colors"
           >
             Retry
           </button>
@@ -179,7 +179,7 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
       )}
 
       {/* Upload Hint */}
-      <p className="text-xs text-gray-500">
+      <p className="text-[11px] text-[var(--text-tertiary)]">
         Click on the avatar to upload (max 2MB)
       </p>
     </div>

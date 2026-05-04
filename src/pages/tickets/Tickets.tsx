@@ -185,6 +185,7 @@ export default function Tickets() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               leftIcon={<Search size={18} />}
+              className='pl-8'
             />
           </div>
           <select
