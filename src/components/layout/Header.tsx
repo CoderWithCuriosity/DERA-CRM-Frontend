@@ -19,7 +19,9 @@ import {
   X,
   Sun,
   Moon,
-  Monitor
+  Monitor,
+  Power, // Add this for the toggle icon
+  PowerOff // Add this for off state
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useTheme } from '../../hooks/useTheme';
@@ -34,6 +36,9 @@ import { activitiesApi } from '../../api/activities';
 import type { Notification as NotificationType } from '../../types/notification';
 import { formatDate } from '../../utils/formatters';
 import { useDebounce } from '../../hooks/useDebounce';
+
+// Add this to localStorage key
+const POLLING_ENABLED_KEY = 'dashboard_polling_enabled';
 
 interface SearchResult {
   id: number;
@@ -61,12 +66,34 @@ export function Header() {
   const [notifications, setNotifications] = useState<NotificationType[]>([]);
   const [markingAll, setMarkingAll] = useState(false);
   
+  // NEW: Polling toggle state (default: false = OFF to save traffic)
+  const [pollingEnabled, setPollingEnabled] = useState(() => {
+    const saved = localStorage.getItem(POLLING_ENABLED_KEY);
+    return saved === 'true'; // Default to false if not set
+  });
+  
   const searchRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const debouncedSearch = useDebounce(searchQuery, 300);
 
   const totalUnreadCount = notificationCount + messageCount;
 
+  // NEW: Toggle polling function
+  const togglePolling = () => {
+    const newState = !pollingEnabled;
+    setPollingEnabled(newState);
+    localStorage.setItem(POLLING_ENABLED_KEY, String(newState));
+    
+    // If turning ON, fetch counts immediately
+    if (newState) {
+      fetchCounts();
+    } else {
+      // If turning OFF, clear counts (optional)
+      console.log('Polling disabled - saving traffic');
+    }
+  };
+
+  // Search effect (unchanged)
   useEffect(() => {
     if (debouncedSearch.trim().length >= 2) {
       performSearch();
@@ -76,6 +103,7 @@ export function Header() {
     }
   }, [debouncedSearch]);
 
+  // Click outside handler (unchanged)
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
@@ -87,6 +115,7 @@ export function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Keyboard handler (unchanged)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!showSearchResults || searchResults.length === 0) return;
@@ -210,6 +239,9 @@ export function Header() {
   };
 
   const fetchCounts = async () => {
+    // ONLY fetch if polling is enabled
+    if (!pollingEnabled) return;
+    
     try {
       const [notificationsRes, messagesRes] = await Promise.all([
         notificationsApi.getNotifications({ limit: 1, unread_only: true }),
@@ -314,12 +346,33 @@ export function Header() {
     }
   };
 
+  // MODIFIED: Polling effect with toggle control
   useEffect(() => {
-    fetchCounts();
-    const interval = setInterval(fetchCounts, 30000);
-    return () => clearInterval(interval);
-  }, []);
+    // Initial fetch only if polling is enabled
+    if (pollingEnabled) {
+      fetchCounts();
+    }
+    
+    let interval: number | null = null;
+    
+    // Only set up interval if polling is enabled
+    if (pollingEnabled) {
+      interval = setInterval(() => {
+        // Don't poll if tab is hidden (saves even more traffic)
+        if (!document.hidden) {
+          fetchCounts();
+        }
+      }, 30000); // 30 seconds
+    }
+    
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [pollingEnabled]); // Re-run when toggle changes
 
+  // Notifications fetch when dropdown opens (always works, but count might be stale)
   useEffect(() => {
     if (showNotifications) {
       fetchNotifications();
@@ -425,6 +478,31 @@ export function Header() {
 
       <div className="flex-1" />
 
+      {/* NEW: Polling Toggle Switch */}
+      <div className="flex items-center gap-2 px-2 py-1 rounded-lg bg-[var(--bg-subtle)]">
+        <button
+          onClick={togglePolling}
+          className={`flex items-center gap-1.5 px-2 py-1 rounded-md transition-all duration-200 text-xs font-medium ${
+            pollingEnabled 
+              ? 'bg-[var(--accent)] text-white' 
+              : 'bg-[var(--bg-base)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+          }`}
+          title={pollingEnabled ? 'Live updates ON - Click to save traffic' : 'Live updates OFF - Click to enable notifications'}
+        >
+          {pollingEnabled ? (
+            <>
+              <Power size={12} />
+              <span>Live ON</span>
+            </>
+          ) : (
+            <>
+              <PowerOff size={12} />
+              <span>Live OFF</span>
+            </>
+          )}
+        </button>
+      </div>
+
       {/* Theme Switcher */}
       <div className="flex items-center rounded-[var(--radius-md)] border border-[var(--border-default)] overflow-hidden">
         {themeOptions.map(({ value, icon: Icon }) => (
@@ -449,10 +527,15 @@ export function Header() {
           className="relative p-2 text-[var(--text-secondary)] hover:text-[var(--accent)] hover:bg-[var(--bg-subtle)] rounded-lg transition-colors"
         >
           <Bell size={15} />
+          {/* Only show badge if polling is enabled OR we have cached counts */}
           {totalUnreadCount > 0 && (
             <span className="absolute -top-1 -right-1 w-5 h-5 bg-[var(--danger)] text-white text-[10px] flex items-center justify-center rounded-full">
               {totalUnreadCount > 9 ? '9+' : totalUnreadCount}
             </span>
+          )}
+          {/* Show indicator when polling is OFF */}
+          {!pollingEnabled && totalUnreadCount === 0 && (
+            <span className="absolute -top-1 -right-1 w-2 h-2 bg-[var(--text-tertiary)] rounded-full" />
           )}
         </button>
 
@@ -477,6 +560,14 @@ export function Header() {
                     </button>
                   )}
                 </div>
+                {/* Show warning banner when polling is OFF */}
+                {!pollingEnabled && (
+                  <div className="mb-3 p-2 rounded-lg bg-[var(--warning-subtle)] border border-[var(--warning)]">
+                    <p className="text-xs text-[var(--warning-text)]">
+                      ⚡ Live updates are OFF. Enable the "Live ON" switch to receive real-time notifications.
+                    </p>
+                  </div>
+                )}
                 <div className="space-y-3 max-h-96 overflow-y-auto">
                   {notifications.length > 0 ? (
                     notifications.map((notif) => (
