@@ -1,10 +1,10 @@
 import type { AuditDetails, AuditChange } from '../types/admin';
-import { 
-  Plus, 
-  PenSquare, 
-  Trash2, 
-  Eye, 
-  LogIn, 
+import {
+  Plus,
+  PenSquare,
+  Trash2,
+  Eye,
+  LogIn,
   LogOut,
   Download,
   Upload,
@@ -25,7 +25,7 @@ import {
  */
 export function parseAuditDetails(details: string): AuditDetails | null {
   if (!details) return null;
-  
+
   try {
     const parsed = JSON.parse(details);
     return parsed;
@@ -83,8 +83,8 @@ export function getActionColorClass(action: string): string {
     UPDATE: 'bg-blue-100 text-blue-800',
     DELETE: 'bg-red-100 text-red-800',
     VIEW: 'bg-gray-100 text-gray-800',
-    LOGIN: 'bg-purple-100 text-purple-800',
-    LOGOUT: 'bg-orange-100 text-orange-800',
+    LOGIN: 'bg-purple-100 text-purple-800 dark:bg-purple-900/60 dark:text-purple-200',
+    LOGOUT: 'bg-orange-100 text-orange-800 dark:bg-orange-900/60 dark:text-orange-200',
     EXPORT: 'bg-teal-100 text-teal-800',
     IMPORT: 'bg-cyan-100 text-cyan-800',
     IMPERSONATE: 'bg-pink-100 text-pink-800',
@@ -174,16 +174,16 @@ export function getEntityDisplayName(entityType: string): string {
  */
 export function formatChangesSummary(changes: AuditChange[]): string {
   if (!changes || changes.length === 0) return '';
-  
+
   if (changes.length === 1) {
     const c = changes[0];
     return `${c.display_name}: "${formatValue(c.old_value)}" → "${formatValue(c.new_value)}"`;
   }
-  
+
   if (changes.length <= 3) {
     return changes.map(c => c.display_name).join(', ');
   }
-  
+
   return `${changes.length} fields changed`;
 }
 

@@ -1,4 +1,3 @@
-// src/pages/admin/AuditLogs.tsx
 import React, { useState, useEffect } from 'react';
 import {
   Filter,
@@ -23,6 +22,7 @@ import type {
 } from '../../types/admin';
 import AuditLogDetailModal from '../../components/admin/AuditLogDetailModal';
 import AuditLogSummaryPanel from '../../components/admin/AuditLogSummaryPanel';
+import { cn } from '../../utils/cn';
 
 const AuditLogs: React.FC = () => {
   const [logs, setLogs] = useState<AuditLogListItem[]>([]);
@@ -134,12 +134,10 @@ const AuditLogs: React.FC = () => {
     setFilters({ ...filters, page: newPage });
   };
 
-  // FIXED: Don't merge, use the detail response directly
   const handleViewDetails = async (log: AuditLogListItem) => {
     try {
       const response = await adminApi.getAuditLogDetail(log.id);
       if (response.success) {
-        // response.data is already the complete detailed log
         setSelectedLog(response.data);
         setShowDetailModal(true);
       }
@@ -184,61 +182,69 @@ const AuditLogs: React.FC = () => {
   };
 
   return (
-    <div className="p-6 max-w-[1600px] mx-auto">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Audit Logs</h1>
-            <p className="text-gray-600 mt-1">
-              Track all user activities and system changes
-            </p>
-          </div>
-          <div className="flex gap-3">
-            <button
-              onClick={handleViewSummary}
-              className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-            >
-              <BarChart3 className="w-4 h-4" />
-              Summary
-            </button>
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <Filter className="w-4 h-4" />
-              Filters
-              {(filters.user_id || filters.action || filters.entity_type || filters.date_from || filters.date_to) && (
-                <span className="ml-1 w-2 h-2 bg-blue-500 rounded-full"></span>
-              )}
-            </button>
-            <button
-              onClick={fetchAuditLogs}
-              className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <RefreshCw className="w-4 h-4" />
-              Refresh
-            </button>
-          </div>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-[var(--text-primary)]">Audit Logs</h1>
+          <p className="text-[var(--text-secondary)] mt-1">
+            Track all user activities and system changes
+          </p>
+        </div>
+        <div className="flex gap-3">
+          <button
+            onClick={handleViewSummary}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition-all duration-200 shadow-sm"
+          >
+            <BarChart3 className="w-4 h-4" />
+            Summary
+          </button>
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={cn(
+              "inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200",
+              showFilters 
+                ? "bg-[var(--accent)] text-white" 
+                : "bg-[var(--bg-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-default)]"
+            )}
+          >
+            <Filter className="w-4 h-4" />
+            Filters
+            {(filters.user_id || filters.action || filters.entity_type || filters.date_from || filters.date_to) && (
+              <span className="ml-1 w-2 h-2 bg-[var(--accent)] rounded-full animate-pulse"></span>
+            )}
+          </button>
+          <button
+            onClick={fetchAuditLogs}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-default)] transition-all duration-200"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Refresh
+          </button>
         </div>
       </div>
 
       {/* Filters Panel */}
       {showFilters && (
-        <div className="mb-6 bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+        <div className="bg-[var(--bg-base)] rounded-xl border border-[var(--border-default)] p-5 shadow-lg">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="font-semibold text-gray-900">Filter Audit Logs</h3>
-            <button onClick={() => setShowFilters(false)} className="text-gray-400 hover:text-gray-600">
+            <h3 className="font-semibold text-[var(--text-primary)]">Filter Audit Logs</h3>
+            <button 
+              onClick={() => setShowFilters(false)} 
+              className="p-1 rounded-lg text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] transition-colors"
+            >
               <X className="w-5 h-5" />
             </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">User</label>
+              <label className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider mb-1">
+                User
+              </label>
               <select
                 value={tempFilters.user_id}
                 onChange={(e) => setTempFilters({ ...tempFilters, user_id: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 rounded-lg border border-[var(--border-default)] bg-[var(--bg-base)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)] transition-all"
               >
                 <option value="">All Users</option>
                 {availableUsers.map(user => (
@@ -247,11 +253,13 @@ const AuditLogs: React.FC = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Action</label>
+              <label className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider mb-1">
+                Action
+              </label>
               <select
                 value={tempFilters.action}
                 onChange={(e) => setTempFilters({ ...tempFilters, action: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 rounded-lg border border-[var(--border-default)] bg-[var(--bg-base)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)] transition-all"
               >
                 <option value="">All Actions</option>
                 {actionTypes.map(action => (
@@ -260,11 +268,13 @@ const AuditLogs: React.FC = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Entity Type</label>
+              <label className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider mb-1">
+                Entity Type
+              </label>
               <select
                 value={tempFilters.entity_type}
                 onChange={(e) => setTempFilters({ ...tempFilters, entity_type: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 rounded-lg border border-[var(--border-default)] bg-[var(--bg-base)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)] transition-all"
               >
                 <option value="">All Entities</option>
                 {entityTypes.map(type => (
@@ -273,34 +283,38 @@ const AuditLogs: React.FC = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Date From</label>
+              <label className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider mb-1">
+                Date From
+              </label>
               <input
                 type="date"
                 value={tempFilters.date_from}
                 onChange={(e) => setTempFilters({ ...tempFilters, date_from: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 rounded-lg border border-[var(--border-default)] bg-[var(--bg-base)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)] transition-all"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Date To</label>
+              <label className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider mb-1">
+                Date To
+              </label>
               <input
                 type="date"
                 value={tempFilters.date_to}
                 onChange={(e) => setTempFilters({ ...tempFilters, date_to: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 rounded-lg border border-[var(--border-default)] bg-[var(--bg-base)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)] transition-all"
               />
             </div>
           </div>
-          <div className="flex justify-end gap-3 mt-4">
+          <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-[var(--border-default)]">
             <button
               onClick={handleClearFilters}
-              className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              className="px-4 py-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] transition-colors"
             >
               Clear All
             </button>
             <button
               onClick={handleApplyFilters}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-4 py-2 rounded-lg bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] transition-all duration-200 shadow-sm"
             >
               Apply Filters
             </button>
@@ -309,102 +323,110 @@ const AuditLogs: React.FC = () => {
       )}
 
       {/* Stats Bar */}
-      <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-[var(--bg-base)] rounded-xl border border-[var(--border-default)] p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Total Activities</p>
-              <p className="text-2xl font-bold text-gray-900">{pagination.total.toLocaleString()}</p>
+              <p className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Total Activities</p>
+              <p className="text-2xl font-bold text-[var(--text-primary)] mt-1">{pagination.total.toLocaleString()}</p>
             </div>
-            <Activity className="w-8 h-8 text-gray-400" />
+            <div className="p-3 rounded-lg bg-[var(--bg-subtle)]">
+              <Activity className="w-6 h-6 text-[var(--text-tertiary)]" />
+            </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="bg-[var(--bg-base)] rounded-xl border border-[var(--border-default)] p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Current Page</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Current Page</p>
+              <p className="text-2xl font-bold text-[var(--text-primary)] mt-1">
                 {pagination.page} / {pagination.pages || 1}
               </p>
             </div>
-            <Eye className="w-8 h-8 text-gray-400" />
+            <div className="p-3 rounded-lg bg-[var(--bg-subtle)]">
+              <Eye className="w-6 h-6 text-[var(--text-tertiary)]" />
+            </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="bg-[var(--bg-base)] rounded-xl border border-[var(--border-default)] p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Items Per Page</p>
+              <p className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Items Per Page</p>
               <select
                 value={filters.limit}
                 onChange={(e) => setFilters({ ...filters, limit: parseInt(e.target.value), page: 1 })}
-                className="mt-1 text-lg font-semibold text-gray-900 border border-gray-300 rounded-md px-2 py-1"
+                className="mt-1 text-lg font-semibold text-[var(--text-primary)] bg-transparent border border-[var(--border-default)] rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]"
               >
                 <option value={20}>20</option>
                 <option value={50}>50</option>
                 <option value={100}>100</option>
               </select>
             </div>
-            <Database className="w-8 h-8 text-gray-400" />
+            <div className="p-3 rounded-lg bg-[var(--bg-subtle)]">
+              <Database className="w-6 h-6 text-[var(--text-tertiary)]" />
+            </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="bg-[var(--bg-base)] rounded-xl border border-[var(--border-default)] p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Unique Users</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Unique Users</p>
+              <p className="text-2xl font-bold text-[var(--text-primary)] mt-1">
                 {new Set(logs.map(l => l.user_id)).size}
               </p>
             </div>
-            <UsersIcon className="w-8 h-8 text-gray-400" />
+            <div className="p-3 rounded-lg bg-[var(--bg-subtle)]">
+              <UsersIcon className="w-6 h-6 text-[var(--text-tertiary)]" />
+            </div>
           </div>
         </div>
       </div>
 
       {/* Audit Logs Table */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <div className="bg-[var(--bg-base)] rounded-xl border border-[var(--border-default)] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-[var(--bg-subtle)] border-b border-[var(--border-default)]">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
                   Timestamp
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
                   User
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
                   Action
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
                   Entity
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
                   Summary
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
                   IP Address
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-[var(--border-default)]">
               {loading ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-12 text-center">
                     <div className="flex justify-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent)]"></div>
                     </div>
-                    <p className="mt-2 text-gray-500">Loading audit logs...</p>
+                    <p className="mt-2 text-[var(--text-secondary)]">Loading audit logs...</p>
                   </td>
                 </tr>
               ) : logs.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-12 text-center">
-                    <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                    <p className="text-gray-500">No audit logs found</p>
-                    <p className="text-sm text-gray-400 mt-1">Try adjusting your filters</p>
+                    <AlertCircle className="w-12 h-12 text-[var(--text-tertiary)] mx-auto mb-3" />
+                    <p className="text-[var(--text-primary)] font-medium">No audit logs found</p>
+                    <p className="text-sm text-[var(--text-tertiary)] mt-1">Try adjusting your filters</p>
                   </td>
                 </tr>
               ) : (
@@ -415,28 +437,28 @@ const AuditLogs: React.FC = () => {
                   const EntityIcon = getEntityIconComponent(log.entity_type);
                   
                   return (
-                    <tr key={log.id} className="hover:bg-gray-50 transition-colors">
+                    <tr key={log.id} className="hover:bg-[var(--bg-subtle)] transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-2">
-                          <Clock className="w-4 h-4 text-gray-400" />
-                          <span className="text-sm text-gray-900" title={formatDate(log.created_at)}>
+                          <Clock className="w-4 h-4 text-[var(--text-tertiary)]" />
+                          <span className="text-sm text-[var(--text-primary)]" title={formatDate(log.created_at)}>
                             {getRelativeTime(log.created_at)}
                           </span>
                         </div>
-                        <div className="text-xs text-gray-500 mt-1">
+                        <div className="text-xs text-[var(--text-tertiary)] mt-1">
                           {new Date(log.created_at).toLocaleTimeString()}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-medium">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[var(--accent)] to-[var(--accent-hover)] flex items-center justify-center text-white text-sm font-medium shadow-sm">
                             {log.user?.first_name?.[0]}{log.user?.last_name?.[0]}
                           </div>
                           <div>
-                            <div className="text-sm font-medium text-gray-900">
+                            <div className="text-sm font-medium text-[var(--text-primary)]">
                               {log.user ? `${log.user.first_name} ${log.user.last_name}` : `User ${log.user_id}`}
                             </div>
-                            <div className="text-xs text-gray-500">
+                            <div className="text-xs text-[var(--text-tertiary)]">
                               {log.user?.email}
                             </div>
                           </div>
@@ -453,33 +475,33 @@ const AuditLogs: React.FC = () => {
                           <div className={`p-1.5 rounded-lg ${getEntityBgColorClass(log.entity_type)}`}>
                             <EntityIcon className={`w-4 h-4 ${getEntityColorClass(log.entity_type)}`} />
                           </div>
-                          <span className="text-sm text-gray-900">
+                          <span className="text-sm text-[var(--text-primary)]">
                             {getEntityDisplayName(log.entity_type)}
                           </span>
                           {log.entity_id && (
-                            <span className="text-xs text-gray-400">#{log.entity_id}</span>
+                            <span className="text-xs text-[var(--text-tertiary)]">#{log.entity_id}</span>
                           )}
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900 max-w-md truncate" title={summary}>
+                        <div className="text-sm text-[var(--text-primary)] max-w-md truncate" title={summary}>
                           {summary}
                         </div>
                         {details?.changes && details.changes.length > 0 && (
-                          <div className="text-xs text-gray-500 mt-1">
+                          <div className="text-xs text-[var(--text-tertiary)] mt-1">
                             {details.changes.length} field{details.changes.length > 1 ? 's' : ''} changed
                           </div>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <code className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded">
+                        <code className="text-xs bg-[var(--bg-subtle)] text-[var(--text-secondary)] px-2 py-1 rounded font-mono">
                           {log.ip_address || '—'}
                         </code>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right">
                         <button
                           onClick={() => handleViewDetails(log)}
-                          className="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center gap-1 ml-auto"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-[var(--accent)] hover:bg-[var(--accent-subtle)] transition-all duration-200"
                         >
                           <Eye className="w-4 h-4" />
                           Details
@@ -495,8 +517,8 @@ const AuditLogs: React.FC = () => {
 
         {/* Pagination */}
         {!loading && logs.length > 0 && (
-          <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-            <div className="text-sm text-gray-500">
+          <div className="px-6 py-4 border-t border-[var(--border-default)] flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-sm text-[var(--text-secondary)]">
               Showing {((pagination.page - 1) * pagination.limit) + 1} to{' '}
               {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} results
             </div>
@@ -504,7 +526,7 @@ const AuditLogs: React.FC = () => {
               <button
                 onClick={() => handlePageChange(pagination.page - 1)}
                 disabled={pagination.page === 1}
-                className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                className="p-2 rounded-lg border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -524,11 +546,12 @@ const AuditLogs: React.FC = () => {
                     <button
                       key={pageNum}
                       onClick={() => handlePageChange(pageNum)}
-                      className={`px-3 py-1 rounded-md text-sm ${
+                      className={cn(
+                        "min-w-[2rem] h-8 px-2 rounded-lg text-sm transition-all",
                         pagination.page === pageNum
-                          ? 'bg-blue-600 text-white'
-                          : 'border border-gray-300 hover:bg-gray-50'
-                      }`}
+                          ? "bg-[var(--accent)] text-white shadow-sm"
+                          : "border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)]"
+                      )}
                     >
                       {pageNum}
                     </button>
@@ -538,7 +561,7 @@ const AuditLogs: React.FC = () => {
               <button
                 onClick={() => handlePageChange(pagination.page + 1)}
                 disabled={pagination.page === pagination.pages}
-                className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                className="p-2 rounded-lg border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
