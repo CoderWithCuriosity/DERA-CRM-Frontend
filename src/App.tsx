@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { ThemeWrapper } from './components/ThemeWrapper';
 import { Layout } from './components/layout/Layout';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
@@ -44,7 +45,7 @@ import VerifyEmailSent from './pages/auth/VerifyEmailSent';
 import { TemplateForm } from './pages/campaigns/TemplateForm';
 import TemplateDetail from './pages/campaigns/TemplateDetail';
 
-function App() {
+function AppContent() {
   const { isAuthenticated } = useAuth();
 
   return (
@@ -62,8 +63,6 @@ function App() {
         <Route path="/verify-email-sent" element={<VerifyEmailSent />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/request-verification" element={<RequestVerification />} />
-
-
 
         {/* Protected Routes */}
         <Route path="/" element={
@@ -87,8 +86,7 @@ function App() {
           {/* Notifications */}
           <Route path="notifications" element={<NotificationsPage />} />
           
-          
-          {/* Doucments */}
+          {/* Documents */}
           <Route path="documents" element={<Documents />} />
 
           {/* Reports */}
@@ -118,7 +116,7 @@ function App() {
             <Route path=":id/edit" element={<CreateActivity />} />
           </Route>
 
-          {/* Campaigns - Static routes BEFORE dynamic :id route */}
+          {/* Campaigns */}
           <Route path="campaigns">
             <Route index element={<Campaigns />} />
             <Route path="new" element={<CreateCampaign />} />
@@ -129,10 +127,9 @@ function App() {
             <Route path=":id" element={<CampaignDetail />} />
           </Route>
 
-          {/* Settings - Profile is accessible to all users */}
+          {/* Settings */}
           <Route path="settings/profile" element={<Profile />} />
 
-          {/* Admin-only Settings Routes */}
           <Route path="settings/organization" element={
             <AdminRoute>
               <Organization />
@@ -169,6 +166,14 @@ function App() {
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
+  );
+}
+
+function App() {
+  return (
+    <ThemeWrapper>
+      <AppContent />
+    </ThemeWrapper>
   );
 }
 

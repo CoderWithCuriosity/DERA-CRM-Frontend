@@ -65,13 +65,13 @@ export function Header() {
   const [messageCount, setMessageCount] = useState(0);
   const [notifications, setNotifications] = useState<NotificationType[]>([]);
   const [markingAll, setMarkingAll] = useState(false);
-  
+
   // NEW: Polling toggle state (default: false = OFF to save traffic)
   const [pollingEnabled, setPollingEnabled] = useState(() => {
     const saved = localStorage.getItem(POLLING_ENABLED_KEY);
     return saved === 'true'; // Default to false if not set
   });
-  
+
   const searchRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const debouncedSearch = useDebounce(searchQuery, 300);
@@ -83,7 +83,7 @@ export function Header() {
     const newState = !pollingEnabled;
     setPollingEnabled(newState);
     localStorage.setItem(POLLING_ENABLED_KEY, String(newState));
-    
+
     // If turning ON, fetch counts immediately
     if (newState) {
       fetchCounts();
@@ -241,7 +241,7 @@ export function Header() {
   const fetchCounts = async () => {
     // ONLY fetch if polling is enabled
     if (!pollingEnabled) return;
-    
+
     try {
       const [notificationsRes, messagesRes] = await Promise.all([
         notificationsApi.getNotifications({ limit: 1, unread_only: true }),
@@ -279,7 +279,7 @@ export function Header() {
   const handleMarkAsRead = async (id: number) => {
     try {
       await notificationsApi.markAsRead(id);
-      setNotifications(prev => 
+      setNotifications(prev =>
         prev.map(n => n.id === id ? { ...n, read_at: new Date().toISOString(), is_read: true } : n)
       );
       setNotificationCount(prev => Math.max(0, prev - 1));
@@ -292,7 +292,7 @@ export function Header() {
     if (!notification.read_at) {
       handleMarkAsRead(notification.id);
     }
-    
+
     if (notification.data?.url) {
       navigate(notification.data.url);
     } else if (notification.data?.ticket_id) {
@@ -352,9 +352,9 @@ export function Header() {
     if (pollingEnabled) {
       fetchCounts();
     }
-    
+
     let interval: number | null = null;
-    
+
     // Only set up interval if polling is enabled
     if (pollingEnabled) {
       interval = setInterval(() => {
@@ -364,7 +364,7 @@ export function Header() {
         }
       }, 30000); // 30 seconds
     }
-    
+
     return () => {
       if (interval) {
         clearInterval(interval);
@@ -446,9 +446,8 @@ export function Header() {
                         <button
                           key={`${result.type}-${result.id}`}
                           onClick={() => handleResultClick(result)}
-                          className={`w-full text-left px-4 py-3 flex items-center gap-3 transition-colors ${
-                            index === selectedIndex ? 'bg-[var(--accent-subtle)]' : 'hover:bg-[var(--bg-subtle)]'
-                          }`}
+                          className={`w-full text-left px-4 py-3 flex items-center gap-3 transition-colors ${index === selectedIndex ? 'bg-[var(--accent-subtle)]' : 'hover:bg-[var(--bg-subtle)]'
+                            }`}
                         >
                           <div className={`p-2 rounded-lg shrink-0 ${getResultTypeStyles(result.type)}`}>
                             {result.icon}
@@ -482,11 +481,10 @@ export function Header() {
       <div className="flex items-center gap-2 px-2 py-1 rounded-lg bg-[var(--bg-subtle)]">
         <button
           onClick={togglePolling}
-          className={`flex items-center gap-1.5 px-2 py-1 rounded-md transition-all duration-200 text-xs font-medium ${
-            pollingEnabled 
-              ? 'bg-[var(--accent)] text-white' 
+          className={`flex items-center gap-1.5 px-2 py-1 rounded-md transition-all duration-200 text-xs font-medium ${pollingEnabled
+              ? 'bg-[var(--accent)] text-white'
               : 'bg-[var(--bg-base)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-          }`}
+            }`}
           title={pollingEnabled ? 'Live updates ON - Click to save traffic' : 'Live updates OFF - Click to enable notifications'}
         >
           {pollingEnabled ? (
@@ -504,18 +502,21 @@ export function Header() {
       </div>
 
       {/* Theme Switcher */}
-      <div className="flex items-center rounded-[var(--radius-md)] border border-[var(--border-default)] overflow-hidden">
+      <div className="flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-subtle)] p-0.5">
         {themeOptions.map(({ value, icon: Icon }) => (
           <button
             key={value}
             onClick={() => setTheme(value)}
-            className="h-7 w-7 flex items-center justify-center transition-all duration-[120ms]"
-            style={{
-              backgroundColor: theme === value ? 'var(--bg-subtle)' : 'transparent',
-              color: theme === value ? 'var(--text-primary)' : 'var(--text-tertiary)',
-            }}
+            className={`
+        h-7 w-7 flex items-center justify-center rounded-md transition-all duration-150
+        ${theme === value
+                ? 'bg-[var(--accent)] text-white shadow-sm scale-95'
+                : 'text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-muted)]'
+              }
+      `}
+            title={`${value.charAt(0).toUpperCase() + value.slice(1)} mode`}
           >
-            <Icon style={{ width: 13, height: 13 }} />
+            <Icon size={14} />
           </button>
         ))}
       </div>
@@ -574,9 +575,8 @@ export function Header() {
                       <div
                         key={notif.id}
                         onClick={() => handleNotificationClick(notif)}
-                        className={`p-3 rounded-lg transition-colors cursor-pointer ${
-                          !notif.read_at ? 'bg-[var(--accent-subtle)]' : 'bg-transparent'
-                        } hover:bg-[var(--bg-subtle)]`}
+                        className={`p-3 rounded-lg transition-colors cursor-pointer ${!notif.read_at ? 'bg-[var(--accent-subtle)]' : 'bg-transparent'
+                          } hover:bg-[var(--bg-subtle)]`}
                       >
                         <div className="flex items-start space-x-3">
                           <div className={`p-1.5 rounded-lg shrink-0 ${getNotificationBg(notif.type)}`}>

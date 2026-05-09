@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, AlertTriangle, LogIn } from 'lucide-react';
+import { Plus, AlertTriangle, LogIn, Shield, UserCog, Users as UsersIcon } from 'lucide-react';
 import { GlassCard } from '../../components/ui/GlassCard';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
@@ -9,6 +9,7 @@ import type { User } from '../../types/user';
 import { useToast } from '../../hooks/useToast';
 import { formatDate } from '../../utils/formatters';
 import { useAuth } from '../../hooks/useAuth';
+import { cn } from '../../utils/cn';
 
 export default function Users() {
   const [users, setUsers] = useState<User[]>([]);
@@ -35,10 +36,10 @@ export default function Users() {
 
   const handleRoleChange = async (userId: number, newRole: string) => {
     if (!userId || !newRole) return;
-    
+
     try {
       await usersApi.updateUserRole(userId, newRole);
-      toast.success('Role updated');
+      toast.success('Role updated successfully');
       fetchUsers();
     } catch (error) {
       toast.error('Failed to update role');
@@ -46,13 +47,11 @@ export default function Users() {
   };
 
   const handleImpersonate = async (user: User) => {
-    // Don't allow impersonating if already impersonating
     if (isImpersonating) {
       toast.error('Already impersonating a user. Please stop current impersonation first.');
       return;
     }
 
-    // Don't allow impersonating other admins
     if (user.role === 'admin') {
       toast.error('Cannot impersonate another administrator');
       return;
@@ -65,17 +64,15 @@ export default function Users() {
     }
 
     setImpersonatingUserId(user.id);
-    
+
     try {
       const response = await usersApi.impersonateUser(user.id);
       const { token, user: impersonatedUser, impersonatedBy } = response.data;
-      
-      // Use the store method to start impersonation
+
       startImpersonating(impersonatedUser, token, impersonatedBy);
-      
+
       toast.success(`Now impersonating ${user.first_name} ${user.last_name}`);
-      
-      // Reload the page to refresh all components with new user context
+
       setTimeout(() => {
         window.location.href = '/dashboard';
       }, 1000);
@@ -101,36 +98,51 @@ export default function Users() {
     return `${firstName} ${lastName}`.trim() || 'Unknown User';
   };
 
-  const roleColors: Record<string, string> = {
-    admin: 'bg-purple-100 text-purple-800',
-    manager: 'bg-blue-100 text-blue-800',
-    agent: 'bg-green-100 text-green-800',
+  const getRoleBadgeStyles = (role: string) => {
+    const styles = {
+      admin: {
+        bg: 'bg-purple-100 dark:bg-purple-900/30',
+        text: 'text-purple-700 dark:text-purple-300',
+        border: 'border-purple-200 dark:border-purple-800',
+        icon: Shield
+      },
+      manager: {
+        bg: 'bg-blue-100 dark:bg-blue-900/30',
+        text: 'text-blue-700 dark:text-blue-300',
+        border: 'border-blue-200 dark:border-blue-800',
+        icon: UserCog
+      },
+      agent: {
+        bg: 'bg-green-100 dark:bg-green-900/30',
+        text: 'text-green-700 dark:text-green-300',
+        border: 'border-green-200 dark:border-green-800',
+        icon: UsersIcon
+      }
+    };
+    return styles[role as keyof typeof styles] || styles.agent;
   };
 
-  const getRoleBadgeColor = (role: string) => {
-    return roleColors[role?.toLowerCase()] || 'bg-gray-100 text-gray-800';
-  };
-
-  // Check if current user is admin
   const isAdmin = currentUser?.role === 'admin';
 
   return (
     <div className="space-y-6">
-      {/* Show impersonation warning banner if currently impersonating */}
+      {/* Impersonation Banner - Now with dark mode support */}
       {isImpersonating && currentUser?.isImpersonating && (
-        <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-lg">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <AlertTriangle className="h-5 w-5 text-yellow-600 mr-2" />
+        <div className="bg-yellow-50 dark:bg-yellow-950/50 border-l-4 border-yellow-500 dark:border-yellow-600 p-4 rounded-lg">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-yellow-100 dark:bg-yellow-900/50 rounded-lg">
+                <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+              </div>
               <div>
-                <p className="text-sm font-medium text-yellow-800">
+                <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
                   Impersonation Mode Active
                 </p>
-                <p className="text-xs text-yellow-700">
-                  You are currently logged in as {currentUser.first_name} {currentUser.last_name}
+                <p className="text-xs text-yellow-700 dark:text-yellow-300">
+                  Logged in as <span className="font-semibold">{currentUser.first_name} {currentUser.last_name}</span>
                 </p>
-                <p className="text-xs text-yellow-600 mt-1">
-                  Impersonated by: {currentUser.impersonatedBy?.name} ({currentUser.impersonatedBy?.email})
+                <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-0.5">
+                  Impersonated by: {currentUser.impersonatedBy?.name}
                 </p>
               </div>
             </div>
@@ -148,7 +160,7 @@ export default function Users() {
                   toast.error('Failed to stop impersonating');
                 }
               }}
-              className="bg-white"
+              className="bg-white dark:bg-yellow-900/30 border-yellow-300 dark:border-yellow-700 text-yellow-700 dark:text-yellow-300 hover:bg-yellow-50 dark:hover:bg-yellow-900/50"
             >
               Stop Impersonating
             </Button>
@@ -156,93 +168,117 @@ export default function Users() {
         </div>
       )}
 
-      <div className="flex justify-between items-center">
+      {/* Header */}
+      <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-deep-ink">Users</h1>
-          <p className="text-gray-600 mt-1">Manage team members and permissions</p>
+          <h1 className="text-3xl font-bold text-[var(--text-primary)]">Users</h1>
+          <p className="text-[var(--text-secondary)] mt-1">Manage team members and permissions</p>
         </div>
         <Button>
           <Plus size={18} className="mr-2" /> Invite User
         </Button>
       </div>
 
+      {/* Users Table */}
       <GlassCard className="overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-blue-100">
-                <th className="text-left p-4 text-sm font-medium text-gray-600">User</th>
-                <th className="text-left p-4 text-sm font-medium text-gray-600">Role</th>
-                <th className="text-left p-4 text-sm font-medium text-gray-600">Status</th>
-                <th className="text-left p-4 text-sm font-medium text-gray-600">Last Login</th>
-                <th className="text-left p-4 text-sm font-medium text-gray-600">Actions</th>
+              <tr className="border-b border-[var(--border-default)]">
+                <th className="text-left p-4 text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
+                  User
+                </th>
+                <th className="text-left p-4 text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
+                  Role
+                </th>
+                <th className="text-left p-4 text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="text-left p-4 text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
+                  Last Login
+                </th>
+                <th className="text-left p-4 text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="text-center py-8">
+                  <td colSpan={5} className="text-center py-12">
                     <div className="flex justify-center items-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                      <span className="ml-2 text-gray-600">Loading users...</span>
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent)]"></div>
+                      <span className="ml-2 text-[var(--text-secondary)]">Loading users...</span>
                     </div>
-                   </td>
-                 </tr>
+                  </td>
+                </tr>
               ) : !users || users.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="text-center py-12">
-                    <div className="flex flex-col items-center justify-center text-gray-500">
-                      <p className="text-lg mb-2">No users found</p>
-                      <p className="text-sm">Get started by inviting your first team member</p>
+                    <div className="flex flex-col items-center justify-center">
+                      <UsersIcon size={48} className="text-[var(--text-tertiary)] mb-3" />
+                      <p className="text-lg text-[var(--text-primary)] mb-2">No users found</p>
+                      <p className="text-sm text-[var(--text-secondary)]">Get started by inviting your first team member</p>
                     </div>
-                   </td>
-                 </tr>
+                  </td>
+                </tr>
               ) : (
                 users.map((user, idx) => {
-                  // Check if this user can be impersonated
-                  const canImpersonate = isAdmin && user.role !== 'admin' && !isImpersonating;
-                  void canImpersonate;
+                  const roleStyles = getRoleBadgeStyles(user?.role);
+                  const RoleIcon = roleStyles.icon;
+
                   return (
                     <motion.tr
                       key={user?.id || idx}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.05 }}
-                      className="border-b border-blue-50 hover:bg-blue-50/30"
+                      className="border-b border-[var(--border-default)] hover:bg-[var(--bg-subtle)] transition-colors"
                     >
                       <td className="p-4">
                         <div className="flex items-center space-x-3">
-                          <div className="w-8 h-8 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center text-[var(--sidebar-icon-active)] text-sm font-medium">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--accent)] to-[var(--accent-hover)] flex items-center justify-center text-white text-sm font-medium shadow-sm">
                             {getInitials(user)}
                           </div>
                           <div>
-                            <p className="font-medium text-deep-ink">{getFullName(user)}</p>
-                            <p className="text-sm text-gray-600">{user?.email || 'No email provided'}</p>
+                            <p className="font-medium text-[var(--text-primary)]">{getFullName(user)}</p>
+                            <p className="text-sm text-[var(--text-secondary)]">{user?.email || 'No email provided'}</p>
                           </div>
                         </div>
-                       </td>
+                      </td>
                       <td className="p-4">
-                        <Badge className={getRoleBadgeColor(user?.role)}>
+                        <span className={cn(
+                          "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border",
+                          roleStyles.bg,
+                          roleStyles.text,
+                          roleStyles.border
+                        )}>
+                          <RoleIcon size={12} />
                           {user?.role || 'Unknown'}
-                        </Badge>
+                        </span>
                       </td>
                       <td className="p-4">
                         {user?.is_verified ? (
-                          <Badge variant="success">Verified</Badge>
+                          <Badge variant="success" size="sm">Verified</Badge>
                         ) : (
-                          <Badge variant="warning">Pending</Badge>
+                          <Badge variant="warning" size="sm">Pending</Badge>
                         )}
                       </td>
-                      <td className="p-4 text-sm text-gray-600">
+                      <td className="p-4 text-sm text-[var(--text-secondary)]">
                         {user?.last_login ? formatDate(user.last_login) : 'Never'}
                       </td>
                       <td className="p-4">
                         <div className="flex items-center gap-2 flex-wrap">
-                          {/* Role selector */}
+                          {/* Role selector - Improved styling */}
                           <select
                             value={user?.role || 'agent'}
                             onChange={(e) => handleRoleChange(user?.id, e.target.value)}
-                            className="text-sm border border-blue-100 rounded-lg px-2 py-1 bg-white focus:outline-hidden focus:ring-2 focus:ring-primary/20"
+                            className={cn(
+                              "text-sm rounded-lg px-2.5 py-1.5 border focus:outline-none focus:ring-2 transition-all",
+                              "bg-[var(--bg-base)] text-[var(--text-primary)]",
+                              "border-[var(--border-default)] hover:border-[var(--border-strong)]",
+                              "focus:border-[var(--border-focus)] focus:ring-[var(--border-focus)]/20"
+                            )}
                             disabled={!user?.id}
                           >
                             <option value="admin">Admin</option>
@@ -250,31 +286,39 @@ export default function Users() {
                             <option value="agent">Agent</option>
                           </select>
 
-                          {/* Impersonate button - SIMPLIFIED CONDITION */}
+                          {/* Impersonate button - Improved styling */}
                           {isAdmin && user.role !== 'admin' && (
                             <button
                               onClick={() => handleImpersonate(user)}
                               disabled={impersonatingUserId === user.id || isImpersonating}
-                              className="inline-flex items-center px-2.5 py-1.5 text-xs font-medium rounded-md text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              className={cn(
+                                "inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium rounded-lg transition-all",
+                                "bg-amber-50 dark:bg-amber-950/50",
+                                "text-amber-700 dark:text-amber-300",
+                                "border border-amber-200 dark:border-amber-800",
+                                "hover:bg-amber-100 dark:hover:bg-amber-900/70",
+                                "focus:outline-none focus:ring-2 focus:ring-amber-500/50",
+                                "disabled:opacity-50 disabled:cursor-not-allowed"
+                              )}
                               title={`Impersonate ${user.first_name} ${user.last_name}`}
                             >
                               {impersonatingUserId === user.id ? (
                                 <>
-                                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-yellow-700 mr-1"></div>
-                                  <span>Logging in as User...</span>
+                                  <div className="animate-spin rounded-full h-3 w-3 border-2 border-amber-700 dark:border-amber-300 border-t-transparent"></div>
+                                  <span>Impersonating...</span>
                                 </>
                               ) : (
                                 <>
-                                  <LogIn size={14} className="mr-1" />
+                                  <LogIn size={12} />
                                   <span>Login as User</span>
                                 </>
                               )}
                             </button>
                           )}
 
-                          {/* Show indicator if this user is currently being impersonated */}
+                          {/* Currently impersonating indicator */}
                           {isImpersonating && currentUser?.impersonatedBy?.id === user.id && (
-                            <Badge variant="warning" className="text-xs">
+                            <Badge variant="warning" size="sm" className="animate-pulse">
                               Currently Impersonating
                             </Badge>
                           )}

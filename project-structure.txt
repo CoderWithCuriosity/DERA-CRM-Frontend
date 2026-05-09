@@ -3,6 +3,9 @@ frontend/
 ├── .gitignore
 ├── Backend Documentation.md
 ├── design-system.txt
+├── dist
+│   ├── index.html
+│   └── vite.svg
 ├── eslint.config.js
 ├── generate-file-tree.js
 ├── index.html
