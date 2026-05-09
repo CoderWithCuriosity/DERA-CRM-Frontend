@@ -55,6 +55,9 @@ const getUserInitials = (firstName: string, lastName: string): string => {
 const isValidAvatar = (avatar: string | null | undefined): boolean => {
   if (!avatar) return false;
   if (avatar === 'null' || avatar === 'undefined' || avatar === '') return false;
+  avatar = avatar.includes(import.meta.env.VITE_API_URL || '')
+                    ? avatar
+                    : `${import.meta.env.VITE_API_URL.replace(/\/api$/, '')}${avatar}`;
   try { new URL(avatar); return true; } catch { return false; }
 };
 

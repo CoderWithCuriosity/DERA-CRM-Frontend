@@ -58,6 +58,7 @@ frontend/
 │   │   │   ├── Layout.tsx
 │   │   │   ├── PageTransition.tsx
 │   │   │   └── Sidebar.tsx
+│   │   ├── ThemeWrapper.tsx
 │   │   └── ui
 │   │       ├── Badge.tsx
 │   │       ├── Button.tsx

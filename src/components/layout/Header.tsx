@@ -20,8 +20,8 @@ import {
   Sun,
   Moon,
   Monitor,
-  Power, // Add this for the toggle icon
-  PowerOff // Add this for off state
+  Power,
+  PowerOff
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useTheme } from '../../hooks/useTheme';
@@ -50,6 +50,23 @@ interface SearchResult {
   avatar?: string;
 }
 
+// Helper function to validate avatar URL
+const isValidAvatar = (avatar: string | null | undefined): boolean => {
+  if (!avatar) return false;
+  if (avatar === 'null' || avatar === 'undefined' || avatar === '') return false;
+  avatar = avatar.includes(import.meta.env.VITE_API_URL || '')
+                    ? avatar
+                    : `${import.meta.env.VITE_API_URL.replace(/\/api$/, '')}${avatar}`;
+  try { new URL(avatar); return true; } catch { return false; }
+};
+
+// Helper function to get user initials
+const getUserInitials = (firstName: string, lastName: string): string => {
+  const firstInitial = firstName?.[0] || '';
+  const lastInitial = lastName?.[0] || '';
+  return `${firstInitial}${lastInitial}`.toUpperCase();
+};
+
 export function Header() {
   const { user, logout } = useAuth();
   const { theme, setTheme } = useTheme();
@@ -65,6 +82,7 @@ export function Header() {
   const [messageCount, setMessageCount] = useState(0);
   const [notifications, setNotifications] = useState<NotificationType[]>([]);
   const [markingAll, setMarkingAll] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
 
   // NEW: Polling toggle state (default: false = OFF to save traffic)
   const [pollingEnabled, setPollingEnabled] = useState(() => {
@@ -77,6 +95,14 @@ export function Header() {
   const debouncedSearch = useDebounce(searchQuery, 300);
 
   const totalUnreadCount = notificationCount + messageCount;
+
+  // Get API URL for avatar
+  const server_api_url = import.meta.env.VITE_API_URL?.replace(/\/api$/, '') || '';
+
+  // Reset avatar error when user avatar changes
+  useEffect(() => {
+    setAvatarError(false);
+  }, [user?.avatar]);
 
   // NEW: Toggle polling function
   const togglePolling = () => {
@@ -322,27 +348,27 @@ export function Header() {
   };
 
   const getNotificationBg = (type: string) => {
-    if (type.includes('ticket')) return 'bg-orange-100 text-orange-600';
-    if (type.includes('deal')) return 'bg-green-100 text-green-600';
-    if (type.includes('message')) return 'bg-blue-100 text-blue-600';
-    if (type.includes('activity')) return 'bg-purple-100 text-purple-600';
-    if (type.includes('warning') || type.includes('breach')) return 'bg-red-100 text-red-600';
-    if (type.includes('completed')) return 'bg-teal-100 text-teal-600';
-    return 'bg-gray-100 text-gray-600';
+    if (type.includes('ticket')) return 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400';
+    if (type.includes('deal')) return 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400';
+    if (type.includes('message')) return 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400';
+    if (type.includes('activity')) return 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400';
+    if (type.includes('warning') || type.includes('breach')) return 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400';
+    if (type.includes('completed')) return 'bg-teal-100 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400';
+    return 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400';
   };
 
   const getResultTypeStyles = (type: string) => {
     switch (type) {
       case 'contact':
-        return 'bg-blue-100 text-blue-600';
+        return 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400';
       case 'deal':
-        return 'bg-green-100 text-green-600';
+        return 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400';
       case 'ticket':
-        return 'bg-orange-100 text-orange-600';
+        return 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400';
       case 'activity':
-        return 'bg-purple-100 text-purple-600';
+        return 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400';
       default:
-        return 'bg-gray-100 text-gray-600';
+        return 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400';
     }
   };
 
@@ -384,6 +410,23 @@ export function Header() {
     { value: 'dark' as const, icon: Moon },
     { value: 'system' as const, icon: Monitor },
   ];
+
+  // Check if avatar is valid and not errored
+  const hasValidAvatar = isValidAvatar(user?.avatar) && !avatarError;
+  const userInitials = user ? getUserInitials(user.first_name || '', user.last_name || '') : 'U';
+
+  // Get avatar URL with proper API base
+  const getAvatarUrl = () => {
+    if (!user?.avatar) return null;
+    // Check if it's already a full URL
+    if (user.avatar.startsWith('http://') || user.avatar.startsWith('https://')) {
+      return user.avatar;
+    }
+    // Otherwise prepend API base URL
+    return `${server_api_url}${user.avatar}`;
+  };
+
+  const avatarUrl = getAvatarUrl();
 
   return (
     <header className="h-12 flex items-center gap-3 px-4 border-b border-[var(--border-default)] flex-shrink-0 bg-[var(--bg-base)]">
@@ -619,10 +662,22 @@ export function Header() {
       <div className="relative">
         <button
           onClick={() => setShowProfileMenu(!showProfileMenu)}
-          className="flex items-center space-x-2 p-1.5 rounded-lg hover:bg-[var(--bg-subtle)] transition-colors"
+          className="flex items-center space-x-2 p-1.5 rounded-lg hover:bg-[var(--bg-subtle)] transition-colors group"
         >
-          <div className="w-7 h-7 rounded-full bg-[var(--accent)] flex items-center justify-center text-white text-xs font-medium">
-            {user?.first_name?.[0]}{user?.last_name?.[0]}
+          {/* Avatar with proper image handling */}
+          <div className="w-7 h-7 rounded-full bg-[var(--accent)] flex items-center justify-center text-white text-xs font-medium overflow-hidden flex-shrink-0">
+            {hasValidAvatar && avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt={`${user?.first_name || ''} ${user?.last_name || ''}`}
+                className="w-full h-full object-cover"
+                onError={() => setAvatarError(true)}
+              />
+            ) : (
+              <span className="text-xs font-semibold">
+                {userInitials}
+              </span>
+            )}
           </div>
           <div className="hidden md:block text-left">
             <p className="text-sm font-medium text-[var(--text-primary)]">
@@ -630,7 +685,7 @@ export function Header() {
             </p>
             <p className="text-[11px] text-[var(--text-tertiary)] capitalize">{user?.role}</p>
           </div>
-          <ChevronDown size={13} className="text-[var(--text-tertiary)]" />
+          <ChevronDown size={13} className="text-[var(--text-tertiary)] group-hover:text-[var(--text-secondary)] transition-colors" />
         </button>
 
         <AnimatePresence>
