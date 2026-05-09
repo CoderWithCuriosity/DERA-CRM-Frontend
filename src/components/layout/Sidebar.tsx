@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  LayoutDashboard, 
-  Users, 
-  Target, 
-  Ticket, 
+import {
+  LayoutDashboard,
+  Users,
+  Target,
+  Ticket,
   Calendar,
   Mail,
   Settings,
@@ -138,6 +138,7 @@ export function Sidebar() {
   const { user, logout } = useAuth();
   const [messageCount, setMessageCount] = useState(0);
   const [avatarError, setAvatarError] = useState(false);
+  const server_api_url = import.meta.env.VITE_API_URL.replace(/\/api$/, '') || '';
 
   const fetchUnreadCounts = async () => {
     if (!user) return;
@@ -197,7 +198,7 @@ export function Sidebar() {
     return item.roles?.includes(user.role);
   });
 
-  const mainNav = navigation.filter(item => 
+  const mainNav = navigation.filter(item =>
     !item.path.startsWith('/settings') && !item.path.startsWith('/admin')
   );
   const settingsNav = navigation.filter(item => item.path.startsWith('/settings'));
@@ -231,7 +232,7 @@ export function Sidebar() {
               {/* Logo image or fallback */}
               <div className="w-6 h-6 rounded-[var(--radius-md)] flex items-center justify-center overflow-hidden bg-[var(--accent)]">
                 {hasValidLogo ? (
-                  <img 
+                  <img
                     src={serverApiUrl.replace(/\/api$/, '') + organization.company_logo}
                     alt={organization?.company_name || 'Logo'}
                     className="w-full h-full object-cover"
@@ -256,7 +257,7 @@ export function Sidebar() {
               className="w-6 h-6 rounded-[var(--radius-md)] flex items-center justify-center overflow-hidden bg-[var(--accent)] mx-auto"
             >
               {hasValidLogo ? (
-                <img 
+                <img
                   src={serverApiUrl.replace(/\/api$/, '') + organization.company_logo}
                   alt={organization?.company_name || 'Logo'}
                   className="w-full h-full object-cover"
@@ -334,8 +335,10 @@ export function Sidebar() {
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="w-7 h-7 rounded-full bg-[var(--accent-subtle)] flex items-center justify-center shrink-0 overflow-hidden">
               {hasValidAvatar ? (
-                <img 
-                  src={user!.avatar!}
+                <img
+                  src={user!.avatar!?.includes(server_api_url)
+                    ? user!.avatar
+                    : `${server_api_url}${user!.avatar}`}
                   alt={`${user?.first_name || ''} ${user?.last_name || ''}`}
                   className="w-full h-full object-cover"
                   onError={() => setAvatarError(true)}

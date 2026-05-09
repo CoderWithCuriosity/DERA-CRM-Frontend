@@ -28,6 +28,7 @@ export default function Profile() {
   const [loading, setLoading] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [updatingNotifications, setUpdatingNotifications] = useState(false);
+  const server_api_url = import.meta.env.VITE_API_URL.replace(/\/api$/, '') || '';
 
   const {
     register,
@@ -113,7 +114,7 @@ export default function Profile() {
 
   const handleToggleNotifications = async () => {
     if (!user) return;
-    
+
     setUpdatingNotifications(true);
     try {
       const newNotificationState = !user.settings?.notifications;
@@ -156,18 +157,20 @@ export default function Profile() {
           <div className="relative group">
             <div className="w-24 h-24 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center text-[var(--sidebar-icon-active)] text-3xl font-bold overflow-hidden">
               {user?.avatar ? (
-                <img 
-                  src={user.avatar} 
-                  alt={`${user.first_name} ${user.last_name}`} 
+                <img
+                  src={user.avatar?.includes(server_api_url)
+                    ? user.avatar
+                    : `${server_api_url}${user.avatar}`}
+                  alt={`${user.first_name} ${user.last_name}`}
                   className="w-full h-full object-cover"
                 />
               ) : (
                 <span>{getUserInitials()}</span>
               )}
             </div>
-            
-            <label 
-              htmlFor="avatar-upload" 
+
+            <label
+              htmlFor="avatar-upload"
               className={`absolute bottom-0 right-0 p-1.5 bg-white rounded-full shadow-lg cursor-pointer hover:bg-gray-50 transition-colors ${uploadingAvatar ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <Camera size={16} className="text-[var(--sidebar-icon-active)]" />
@@ -194,12 +197,12 @@ export default function Profile() {
             </h2>
             <p className="text-gray-600">{formatRole(user?.role || '')}</p>
             <p className="text-sm text-gray-500 mt-1">{user?.email}</p>
-            
+
             {user?.avatar && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={handleRemoveAvatar} 
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleRemoveAvatar}
                 className="mt-2 text-red-600 hover:text-red-700 hover:bg-red-50"
                 disabled={uploadingAvatar}
               >
@@ -226,7 +229,7 @@ export default function Profile() {
               {...register('last_name')}
             />
           </div>
-          
+
           <Input
             label="Email"
             type="email"
@@ -237,8 +240,8 @@ export default function Profile() {
           />
 
           <div className="flex justify-end pt-4">
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               loading={loading}
               disabled={uploadingAvatar}
             >
@@ -254,31 +257,28 @@ export default function Profile() {
         <div className="grid grid-cols-3 gap-4">
           <button
             onClick={() => setTheme('light')}
-            className={`p-4 border-2 rounded-xl text-center transition-all ${
-              theme === 'light' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'
-            }`}
+            className={`p-4 border-2 rounded-xl text-center transition-all ${theme === 'light' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'
+              }`}
           >
             <Sun size={28} className="mx-auto mb-2 text-yellow-500" />
             <p className="font-medium text-deep-ink">Light</p>
             <p className="text-xs text-gray-500 mt-1">Light mode</p>
           </button>
-          
+
           <button
             onClick={() => setTheme('dark')}
-            className={`p-4 border-2 rounded-xl text-center transition-all ${
-              theme === 'dark' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'
-            }`}
+            className={`p-4 border-2 rounded-xl text-center transition-all ${theme === 'dark' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'
+              }`}
           >
             <Moon size={28} className="mx-auto mb-2 text-indigo-500" />
             <p className="font-medium text-deep-ink">Dark</p>
             <p className="text-xs text-gray-500 mt-1">Dark mode</p>
           </button>
-          
+
           <button
             onClick={() => setTheme('system')}
-            className={`p-4 border-2 rounded-xl text-center transition-all ${
-              theme === 'system' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'
-            }`}
+            className={`p-4 border-2 rounded-xl text-center transition-all ${theme === 'system' ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'
+              }`}
           >
             <Monitor size={28} className="mx-auto mb-2 text-gray-500" />
             <p className="font-medium text-deep-ink">System</p>
@@ -297,18 +297,16 @@ export default function Profile() {
           <button
             onClick={handleToggleNotifications}
             disabled={updatingNotifications}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
-              user?.settings?.notifications !== false ? 'bg-primary' : 'bg-gray-300'
-            }`}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${user?.settings?.notifications !== false ? 'bg-primary' : 'bg-gray-300'
+              }`}
           >
             <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                user?.settings?.notifications !== false ? 'translate-x-6' : 'translate-x-1'
-              }`}
+              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${user?.settings?.notifications !== false ? 'translate-x-6' : 'translate-x-1'
+                }`}
             />
           </button>
         </div>
-        
+
         <div className="mt-4 flex items-center space-x-2 text-sm text-gray-500">
           {user?.settings?.notifications !== false ? (
             <>
