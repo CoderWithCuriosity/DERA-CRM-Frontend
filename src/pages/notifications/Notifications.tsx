@@ -196,7 +196,7 @@ export function NotificationsPage() {
                       </div>
                       <div className="flex items-center space-x-1 shrink-0 ml-4">
                         {!notification.read_at && (
-                          <Badge variant="primary" size="sm">New</Badge>
+                          <Badge variant="accent" size="sm">New</Badge>
                         )}
                         <button
                           onClick={(e) => {

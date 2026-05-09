@@ -7,7 +7,6 @@ import {
   FileText,
   ArrowRight,
   AlertTriangle,
-  CheckCircle,
 } from 'lucide-react';
 import type { AuditLogDetail, AuditChange } from '../../types/admin';
 

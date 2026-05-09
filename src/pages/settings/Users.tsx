@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Plus, UserCog, AlertTriangle, LogIn } from 'lucide-react';
+import { Plus, AlertTriangle, LogIn } from 'lucide-react';
 import { GlassCard } from '../../components/ui/GlassCard';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
@@ -141,6 +141,7 @@ export default function Users() {
                 try {
                   const response = await usersApi.stopImpersonating();
                   const { token, user: adminUser } = response.data;
+                  void adminUser;
                   localStorage.setItem('accessToken', token);
                   window.location.href = '/settings/users';
                 } catch (error) {

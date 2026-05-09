@@ -16,9 +16,9 @@ import { Badge } from '../../components/ui/Badge';
 import { dealsApi } from '../../api/deals';
 import { ticketsApi } from '../../api/tickets';
 import { activitiesApi } from '../../api/activities';
-import { contactsApi } from '../../api/contacts';
+// import { contactsApi } from '../../api/contacts';
 import { dashboardApi } from '../../api/dashboard';
-import { useAuth } from '../../hooks/useAuth';
+// import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
 import { useCurrency } from '../../hooks/useCurrency';
 import { formatDate } from '../../utils/formatters';
@@ -101,7 +101,7 @@ interface ActivityItem {
 }
 
 export function Reports() {
-  const { user } = useAuth();
+  // const { user } = useAuth();
   const toast = useToast();
   const { formatCurrency } = useCurrency();
   const [loading, setLoading] = useState(true);

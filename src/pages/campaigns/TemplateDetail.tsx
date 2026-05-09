@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit, Copy, Trash2, Mail, Send } from 'lucide-react';
+import { ArrowLeft, Edit, Copy, Trash2, Send } from 'lucide-react';
 import { GlassCard } from '../../components/ui/GlassCard';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';

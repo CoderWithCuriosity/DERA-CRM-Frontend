@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+// import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ArrowLeft, Save, X } from 'lucide-react';
 import { GlassCard } from '../../components/ui/GlassCard';
@@ -83,7 +83,8 @@ export default function CreateActivity() {
 
   // NOW you can use watch
   const selectedType = watch('type');
-  const currentTypeOptions = typeOptions.find(opt => opt.value === selectedType);
+  // const currentTypeOptions = typeOptions.find(opt => opt.value === selectedType);
+  // void currentTypeOptions;
 
   // Dynamic form schema based on selected type
   const [formSchema, setFormSchema] = useState(() => getActivitySchema('task'));
@@ -103,7 +104,8 @@ export default function CreateActivity() {
   // Re-run resolver when schema changes
   useEffect(() => {
     // Re-validate form when schema changes
-    const newResolver = zodResolver(formSchema);
+    // const newResolver = zodResolver(formSchema);
+    // void newResolver;
     // You might need to re-trigger validation here
   }, [formSchema]);
 

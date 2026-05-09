@@ -3,6 +3,7 @@ import { Paperclip, X, Download, Trash2, Image, Video, Music, FileText, Archive,
 import { GlassCard } from '../ui/GlassCard';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
+import type { BadgeVariant } from '../ui/Badge';
 import { attachmentsApi } from '../../api/attachments';
 import type { ContactAttachment } from '../../types/attachment';
 import { useToast } from '../../hooks/useToast';
@@ -99,15 +100,15 @@ export default function ContactAttachments({ contactId, contactName }: ContactAt
     return <Paperclip size={20} className="text-gray-500" />;
   };
 
-  const getFileBadge = (fileType: string) => {
-    const variants: Record<string, 'primary' | 'success' | 'warning' | 'danger' | 'info'> = {
-      image: 'primary',
-      video: 'info',
-      audio: 'success',
-      document: 'warning',
-    };
-    return variants[fileType] || 'default';
+  const getFileBadge = (fileType: string): BadgeVariant => {
+  const variants: Record<string, BadgeVariant> = {
+    image: 'accent',
+    video: 'info',
+    audio: 'success',
+    document: 'warning',
   };
+  return variants[fileType] || 'default';
+};
 
   if (loading) {
     return (

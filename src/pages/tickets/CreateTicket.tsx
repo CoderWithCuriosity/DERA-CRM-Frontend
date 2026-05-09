@@ -4,7 +4,7 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { 
-  ArrowLeft, Save, User as UserIcon, AlertCircle, Calendar, 
+  ArrowLeft, User as UserIcon, AlertCircle, Calendar, 
   UserPlus, X, Search, Plus, Trash2, Send, Users 
 } from 'lucide-react';
 import { GlassCard } from '../../components/ui/GlassCard';
@@ -57,6 +57,7 @@ export default function CreateTicket() {
   const [contactSearch, setContactSearch] = useState('');
   const [searchResults, setSearchResults] = useState<Contact[]>([]);
   const [searching, setSearching] = useState(false);
+  void setSearching;
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const [allContacts, setAllContacts] = useState<Contact[]>([]);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -68,6 +69,7 @@ export default function CreateTicket() {
       contacts: [], // Start with empty contacts array
     },
   });
+  void reset;
 
   const { fields, append, remove } = useFieldArray({
     control,

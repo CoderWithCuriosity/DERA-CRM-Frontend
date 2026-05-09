@@ -85,7 +85,7 @@ export function useCurrency() {
   }, [fetchOrganizationCurrency]);
 
   const formatCurrency = useCallback((amount: number): string => {
-    const { symbol, position, decimalSeparator, thousandSeparator, decimalPlaces, code } = currency;
+    const { symbol, position, decimalSeparator, thousandSeparator, decimalPlaces } = currency;
     
     const formattedAmount = amount.toLocaleString(undefined, {
       minimumFractionDigits: decimalPlaces,

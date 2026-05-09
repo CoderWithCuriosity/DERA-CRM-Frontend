@@ -4,7 +4,7 @@ import type { HTMLMotionProps } from 'framer-motion';
 import { cn } from '../../utils/cn';
 import { Loader2 } from 'lucide-react';
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'outline';
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'outline' | 'success';
 type ButtonSize = 'xs' | 'sm' | 'md' | 'lg';
 
 interface ButtonProps extends HTMLMotionProps<'button'> {
@@ -19,11 +19,12 @@ interface ButtonProps extends HTMLMotionProps<'button'> {
 }
 
 const variants: Record<ButtonVariant, string> = {
-  primary:   'bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] shadow-sm active:scale-[0.98]',
+  primary: 'bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] shadow-sm active:scale-[0.98]',
   secondary: 'bg-[var(--bg-subtle)] text-[var(--text-primary)] hover:bg-[var(--bg-muted)] border border-[var(--border-default)]',
-  ghost:     'bg-transparent text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)]',
-  danger:    'bg-[var(--danger)] text-white hover:opacity-90 shadow-sm active:scale-[0.98]',
-  outline:   'bg-transparent border border-[var(--border-strong)] text-[var(--text-primary)] hover:bg-[var(--bg-subtle)]',
+  ghost: 'bg-transparent text-[var(--text-secondary)] hover:bg-[var(--bg-subtle)] hover:text-[var(--text-primary)]',
+  danger: 'bg-[var(--danger)] text-white hover:opacity-90 shadow-sm active:scale-[0.98]',
+  outline: 'bg-transparent border border-[var(--border-strong)] text-[var(--text-primary)]hover:bg-[var(--bg-subtle)]',
+  success: 'bg-[var(--success)] text-white hover:opacity-90 shadow-sm active:scale-[0.98]'
 };
 
 const sizes: Record<ButtonSize, string> = {
