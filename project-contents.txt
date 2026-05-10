@@ -5739,8 +5739,8 @@ FILE: dist\index.html
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <title>DERA CRM - Managing My Customers Relations</title>
-  <script type="module" crossorigin src="/assets/index-WjoZiKXB.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-C7R9O41W.css">
+  <script type="module" crossorigin src="/assets/index-BqEFiuU2.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-JvbINw0i.css">
 </head>
 
 <body>
@@ -7383,6 +7383,7 @@ import {
   Download,
 } from 'lucide-react';
 import type { AuditLogSummary } from '../../types/admin';
+import { cn } from '../../utils/cn';
 
 interface Props {
   data: AuditLogSummary | null;
@@ -7414,25 +7415,42 @@ const AuditLogSummaryPanel: React.FC<Props> = ({ data, loading, onClose }) => {
     return Math.max(...items.map(i => i.count), 1);
   };
 
+  const getActionColor = (action: string) => {
+    const colors: Record<string, string> = {
+      CREATE: 'bg-emerald-500 dark:bg-emerald-600',
+      UPDATE: 'bg-yellow-500 dark:bg-yellow-600',
+      DELETE: 'bg-red-500 dark:bg-red-600',
+      VIEW: 'bg-green-500 dark:bg-green-600',
+      LOGIN: 'bg-purple-500 dark:bg-purple-600',
+      LOGOUT: 'bg-orange-500 dark:bg-orange-600',
+      EXPORT: 'bg-teal-500 dark:bg-teal-600',
+      IMPORT: 'bg-cyan-500 dark:bg-cyan-600',
+      IMPERSONATE: 'bg-pink-500 dark:bg-pink-600',
+      STOP_IMPERSONATING: 'bg-indigo-500 dark:bg-indigo-600',
+    };
+    return colors[action] || 'bg-indigo-500';
+  };
+
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
+      <div className="bg-[var(--bg-base)] rounded-xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-200">
+        
         {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-gray-200">
+        <div className="flex justify-between items-center p-6 border-b border-[var(--border-default)]">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <BarChart3 className="w-5 h-5 text-purple-600" />
+            <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+              <BarChart3 className="w-5 h-5 text-purple-600 dark:text-purple-400" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Audit Log Summary</h2>
-              <p className="text-sm text-gray-500">Last 30 days overview</p>
+              <h2 className="text-xl font-bold text-[var(--text-primary)]">Audit Log Summary</h2>
+              <p className="text-sm text-[var(--text-secondary)]">Last 30 days overview</p>
             </div>
           </div>
           <div className="flex gap-2">
             {data && (
               <button
                 onClick={handleExport}
-                className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                className="p-2 rounded-lg text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] transition-all duration-200"
                 title="Export summary"
               >
                 <Download className="w-5 h-5" />
@@ -7440,7 +7458,7 @@ const AuditLogSummaryPanel: React.FC<Props> = ({ data, loading, onClose }) => {
             )}
             <button
               onClick={onClose}
-              className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+              className="p-2 rounded-lg text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] transition-all duration-200"
             >
               <X className="w-5 h-5" />
             </button>
@@ -7451,18 +7469,21 @@ const AuditLogSummaryPanel: React.FC<Props> = ({ data, loading, onClose }) => {
         <div className="flex-1 overflow-y-auto p-6">
           {loading ? (
             <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent)]"></div>
             </div>
           ) : !data ? (
             <div className="text-center py-12">
-              <PieChart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">No summary data available</p>
+              <div className="p-4 bg-[var(--bg-subtle)] rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+                <PieChart className="w-10 h-10 text-[var(--text-tertiary)]" />
+              </div>
+              <p className="text-[var(--text-primary)] font-medium">No summary data available</p>
+              <p className="text-sm text-[var(--text-secondary)] mt-1">Try adjusting your date range</p>
             </div>
           ) : (
             <div className="space-y-6">
               {/* Overview Stats */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-4 text-white">
+                <div className="bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 rounded-xl p-5 text-white shadow-lg">
                   <div className="flex items-center justify-between">
                     <Activity className="w-8 h-8 opacity-80" />
                     <TrendingUp className="w-5 h-5 opacity-80" />
@@ -7470,7 +7491,7 @@ const AuditLogSummaryPanel: React.FC<Props> = ({ data, loading, onClose }) => {
                   <p className="text-3xl font-bold mt-3">{data.summary.total_activities.toLocaleString()}</p>
                   <p className="text-sm opacity-90 mt-1">Total Activities</p>
                 </div>
-                <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg p-4 text-white">
+                <div className="bg-gradient-to-br from-purple-500 to-purple-600 dark:from-purple-600 dark:to-purple-700 rounded-xl p-5 text-white shadow-lg">
                   <div className="flex items-center justify-between">
                     <Users className="w-8 h-8 opacity-80" />
                     <TrendingUp className="w-5 h-5 opacity-80" />
@@ -7481,47 +7502,47 @@ const AuditLogSummaryPanel: React.FC<Props> = ({ data, loading, onClose }) => {
               </div>
 
               {/* Period Information */}
-              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                <div className="flex items-center gap-2 text-sm text-gray-600">
+              <div className="bg-[var(--bg-subtle)] rounded-xl p-4 border border-[var(--border-default)]">
+                <div className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
                   <CalendarIcon className="w-4 h-4" />
                   <span>Reporting Period: </span>
-                  <strong>{new Date(data.period.start_date).toLocaleDateString()}</strong>
+                  <strong className="text-[var(--text-primary)]">{new Date(data.period.start_date).toLocaleDateString()}</strong>
                   <span>→</span>
-                  <strong>{new Date(data.period.end_date).toLocaleDateString()}</strong>
+                  <strong className="text-[var(--text-primary)]">{new Date(data.period.end_date).toLocaleDateString()}</strong>
                 </div>
               </div>
 
               {/* By Action */}
               <div>
-                <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">
+                <h3 className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <Activity className="w-3 h-3" />
                   By Action
                 </h3>
                 <div className="space-y-2">
                   {data.by_action.map(item => {
                     const maxValue = getMaxValue(data.by_action);
                     const percentage = (item.count / maxValue) * 100;
-                    const color = 
-                      item.action === 'CREATE' ? 'bg-emerald-500' :
-                      item.action === 'UPDATE' ? 'bg-blue-500' :
-                      item.action === 'DELETE' ? 'bg-red-500' :
-                      item.action === 'VIEW' ? 'bg-gray-500' :
-                      item.action === 'LOGIN' ? 'bg-purple-500' :
-                      'bg-indigo-500';
+                    const colorClass = getActionColor(item.action);
                     
                     return (
-                      <div key={item.action} className="flex items-center gap-3">
-                        <div className="w-32 text-sm text-gray-600">{item.action}</div>
+                      <div key={item.action} className="flex items-center gap-3 group">
+                        <div className="w-32 text-sm font-medium text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">
+                          {item.action}
+                        </div>
                         <div className="flex-1">
-                          <div className="h-8 bg-gray-100 rounded-lg overflow-hidden">
+                          <div className="h-8 bg-[var(--bg-muted)] rounded-lg overflow-hidden shadow-inner">
                             <div
-                              className={`h-full ${color} rounded-lg flex items-center justify-end px-3 text-xs text-white font-medium`}
+                              className={cn(
+                                "h-full rounded-lg flex items-center justify-end px-3 text-xs text-white font-medium transition-all duration-500",
+                                colorClass
+                              )}
                               style={{ width: `${percentage}%` }}
                             >
-                              {percentage > 15 && item.count}
+                              {percentage > 15 && item.count.toLocaleString()}
                             </div>
                           </div>
                         </div>
-                        <div className="w-20 text-right text-sm font-medium text-gray-900">
+                        <div className="w-20 text-right text-sm font-semibold text-[var(--text-primary)]">
                           {item.count.toLocaleString()}
                         </div>
                       </div>
@@ -7532,7 +7553,8 @@ const AuditLogSummaryPanel: React.FC<Props> = ({ data, loading, onClose }) => {
 
               {/* By Entity */}
               <div>
-                <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">
+                <h3 className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <PieChart className="w-3 h-3" />
                   By Entity Type
                 </h3>
                 <div className="space-y-2">
@@ -7540,19 +7562,21 @@ const AuditLogSummaryPanel: React.FC<Props> = ({ data, loading, onClose }) => {
                     const maxValue = getMaxValue(data.by_entity);
                     const percentage = (item.count / maxValue) * 100;
                     return (
-                      <div key={item.entity_type} className="flex items-center gap-3">
-                        <div className="w-32 text-sm text-gray-600 capitalize">{item.entity_type}</div>
+                      <div key={item.entity_type} className="flex items-center gap-3 group">
+                        <div className="w-32 text-sm font-medium text-[var(--text-secondary)] capitalize group-hover:text-[var(--text-primary)] transition-colors">
+                          {item.entity_type.replace(/_/g, ' ')}
+                        </div>
                         <div className="flex-1">
-                          <div className="h-8 bg-gray-100 rounded-lg overflow-hidden">
+                          <div className="h-8 bg-[var(--bg-muted)] rounded-lg overflow-hidden shadow-inner">
                             <div
-                              className="h-full bg-cyan-500 rounded-lg flex items-center justify-end px-3 text-xs text-white font-medium"
+                              className="h-full bg-cyan-500 dark:bg-cyan-600 rounded-lg flex items-center justify-end px-3 text-xs text-white font-medium transition-all duration-500"
                               style={{ width: `${percentage}%` }}
                             >
-                              {percentage > 15 && item.count}
+                              {percentage > 15 && item.count.toLocaleString()}
                             </div>
                           </div>
                         </div>
-                        <div className="w-20 text-right text-sm font-medium text-gray-900">
+                        <div className="w-20 text-right text-sm font-semibold text-[var(--text-primary)]">
                           {item.count.toLocaleString()}
                         </div>
                       </div>
@@ -7563,59 +7587,83 @@ const AuditLogSummaryPanel: React.FC<Props> = ({ data, loading, onClose }) => {
 
               {/* Top Users */}
               <div>
-                <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">
+                <h3 className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <Users className="w-3 h-3" />
                   Most Active Users
                 </h3>
                 <div className="space-y-2">
-                  {data.by_user.slice(0, 5).map(item => (
-                    <div key={item.user.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-500 to-teal-600 flex items-center justify-center text-white text-xs font-medium">
-                          {item.user.first_name[0]}{item.user.last_name[0]}
+                  {data.by_user.slice(0, 5).map((item, index) => {
+                    const gradients = [
+                      'from-emerald-500 to-teal-600',
+                      'from-blue-500 to-cyan-600',
+                      'from-purple-500 to-pink-600',
+                      'from-orange-500 to-red-600',
+                      'from-indigo-500 to-purple-600',
+                    ];
+                    const gradient = gradients[index % gradients.length];
+                    
+                    return (
+                      <div 
+                        key={item.user.id} 
+                        className="flex items-center justify-between p-3 bg-[var(--bg-subtle)] rounded-xl border border-[var(--border-default)] hover:border-[var(--border-strong)] transition-all duration-200"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={cn(
+                            "w-10 h-10 rounded-full bg-gradient-to-br flex items-center justify-center text-white text-sm font-medium shadow-sm",
+                            gradient
+                          )}>
+                            {item.user.first_name[0]}{item.user.last_name[0]}
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-[var(--text-primary)]">
+                              {item.user.first_name} {item.user.last_name}
+                            </p>
+                            <p className="text-xs text-[var(--text-tertiary)]">{item.user.email}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">
-                            {item.user.first_name} {item.user.last_name}
-                          </p>
-                          <p className="text-xs text-gray-500">{item.user.email}</p>
+                        <div className="text-right">
+                          <p className="text-xl font-bold text-[var(--text-primary)]">{item.count.toLocaleString()}</p>
+                          <p className="text-xs text-[var(--text-tertiary)]">actions</p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-lg font-bold text-gray-900">{item.count}</p>
-                        <p className="text-xs text-gray-500">actions</p>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
               {/* Daily Trend */}
               {data.daily_trend && data.daily_trend.length > 0 && (
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">
+                  <h3 className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <TrendingUp className="w-3 h-3" />
                     Daily Activity Trend
                   </h3>
-                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                  <div className="bg-[var(--bg-subtle)] rounded-xl p-5 border border-[var(--border-default)]">
                     <div className="flex items-end gap-1 h-32">
                       {data.daily_trend.slice(-14).map((day, idx) => {
                         const maxTrend = Math.max(...data.daily_trend.map(d => d.count));
                         const height = (day.count / maxTrend) * 100;
                         return (
-                          <div key={idx} className="flex-1 flex flex-col items-center">
-                            <div
-                              className="w-full bg-blue-500 rounded-t transition-all hover:bg-blue-600"
-                              style={{ height: `${height}%` }}
-                            >
-                              <div className="text-center text-xs text-white -mt-5 opacity-0 hover:opacity-100 transition-opacity">
-                                {day.count}
+                          <div key={idx} className="flex-1 flex flex-col items-center group">
+                            <div className="relative w-full">
+                              <div
+                                className="w-full bg-[var(--accent)] rounded-t transition-all duration-300 group-hover:bg-[var(--accent-hover)] cursor-pointer"
+                                style={{ height: `${Math.max(height, 4)}%`, minHeight: '4px' }}
+                              >
+                                <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-[var(--bg-base)] text-[var(--text-primary)] text-xs px-2 py-1 rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                                  {day.count} activities
+                                </div>
                               </div>
                             </div>
-                            <div className="text-xs text-gray-500 mt-1 transform -rotate-45 origin-top-left">
+                            <div className="text-[10px] text-[var(--text-tertiary)] mt-2">
                               {new Date(day.date).getDate()}
                             </div>
                           </div>
                         );
                       })}
+                    </div>
+                    <div className="mt-4 pt-3 border-t border-[var(--border-default)] flex justify-center text-xs text-[var(--text-tertiary)]">
+                      Last 14 days
                     </div>
                   </div>
                 </div>
@@ -7625,10 +7673,10 @@ const AuditLogSummaryPanel: React.FC<Props> = ({ data, loading, onClose }) => {
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-gray-200 bg-gray-50 flex justify-end">
+        <div className="p-5 border-t border-[var(--border-default)] bg-[var(--bg-subtle)] flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+            className="px-4 py-2 rounded-lg bg-[var(--bg-base)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-default)] hover:bg-[var(--bg-muted)] transition-all duration-200"
           >
             Close
           </button>
@@ -9402,6 +9450,9 @@ interface SearchResult {
 const isValidAvatar = (avatar: string | null | undefined): boolean => {
   if (!avatar) return false;
   if (avatar === 'null' || avatar === 'undefined' || avatar === '') return false;
+  avatar = avatar.includes(import.meta.env.VITE_API_URL || '')
+                    ? avatar
+                    : `${import.meta.env.VITE_API_URL.replace(/\/api$/, '')}${avatar}`;
   try { new URL(avatar); return true; } catch { return false; }
 };
 
@@ -10214,6 +10265,9 @@ const getUserInitials = (firstName: string, lastName: string): string => {
 const isValidAvatar = (avatar: string | null | undefined): boolean => {
   if (!avatar) return false;
   if (avatar === 'null' || avatar === 'undefined' || avatar === '') return false;
+  avatar = avatar.includes(import.meta.env.VITE_API_URL || '')
+                    ? avatar
+                    : `${import.meta.env.VITE_API_URL.replace(/\/api$/, '')}${avatar}`;
   try { new URL(avatar); return true; } catch { return false; }
 };
 
@@ -13742,7 +13796,6 @@ export default function CreateActivity() {
 FILE: src\pages\admin\AuditLogs.tsx
 ================================================================================
 
-// src/pages/admin/AuditLogs.tsx
 import React, { useState, useEffect } from 'react';
 import {
   Filter,
@@ -13767,6 +13820,7 @@ import type {
 } from '../../types/admin';
 import AuditLogDetailModal from '../../components/admin/AuditLogDetailModal';
 import AuditLogSummaryPanel from '../../components/admin/AuditLogSummaryPanel';
+import { cn } from '../../utils/cn';
 
 const AuditLogs: React.FC = () => {
   const [logs, setLogs] = useState<AuditLogListItem[]>([]);
@@ -13878,12 +13932,10 @@ const AuditLogs: React.FC = () => {
     setFilters({ ...filters, page: newPage });
   };
 
-  // FIXED: Don't merge, use the detail response directly
   const handleViewDetails = async (log: AuditLogListItem) => {
     try {
       const response = await adminApi.getAuditLogDetail(log.id);
       if (response.success) {
-        // response.data is already the complete detailed log
         setSelectedLog(response.data);
         setShowDetailModal(true);
       }
@@ -13928,61 +13980,69 @@ const AuditLogs: React.FC = () => {
   };
 
   return (
-    <div className="p-6 max-w-[1600px] mx-auto">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="mb-6">
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Audit Logs</h1>
-            <p className="text-gray-600 mt-1">
-              Track all user activities and system changes
-            </p>
-          </div>
-          <div className="flex gap-3">
-            <button
-              onClick={handleViewSummary}
-              className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-            >
-              <BarChart3 className="w-4 h-4" />
-              Summary
-            </button>
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <Filter className="w-4 h-4" />
-              Filters
-              {(filters.user_id || filters.action || filters.entity_type || filters.date_from || filters.date_to) && (
-                <span className="ml-1 w-2 h-2 bg-blue-500 rounded-full"></span>
-              )}
-            </button>
-            <button
-              onClick={fetchAuditLogs}
-              className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <RefreshCw className="w-4 h-4" />
-              Refresh
-            </button>
-          </div>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-[var(--text-primary)]">Audit Logs</h1>
+          <p className="text-[var(--text-secondary)] mt-1">
+            Track all user activities and system changes
+          </p>
+        </div>
+        <div className="flex gap-3">
+          <button
+            onClick={handleViewSummary}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition-all duration-200 shadow-sm"
+          >
+            <BarChart3 className="w-4 h-4" />
+            Summary
+          </button>
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={cn(
+              "inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200",
+              showFilters 
+                ? "bg-[var(--accent)] text-white" 
+                : "bg-[var(--bg-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-default)]"
+            )}
+          >
+            <Filter className="w-4 h-4" />
+            Filters
+            {(filters.user_id || filters.action || filters.entity_type || filters.date_from || filters.date_to) && (
+              <span className="ml-1 w-2 h-2 bg-[var(--accent)] rounded-full animate-pulse"></span>
+            )}
+          </button>
+          <button
+            onClick={fetchAuditLogs}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--bg-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border-default)] transition-all duration-200"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Refresh
+          </button>
         </div>
       </div>
 
       {/* Filters Panel */}
       {showFilters && (
-        <div className="mb-6 bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+        <div className="bg-[var(--bg-base)] rounded-xl border border-[var(--border-default)] p-5 shadow-lg">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="font-semibold text-gray-900">Filter Audit Logs</h3>
-            <button onClick={() => setShowFilters(false)} className="text-gray-400 hover:text-gray-600">
+            <h3 className="font-semibold text-[var(--text-primary)]">Filter Audit Logs</h3>
+            <button 
+              onClick={() => setShowFilters(false)} 
+              className="p-1 rounded-lg text-[var(--text-tertiary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] transition-colors"
+            >
               <X className="w-5 h-5" />
             </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">User</label>
+              <label className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider mb-1">
+                User
+              </label>
               <select
                 value={tempFilters.user_id}
                 onChange={(e) => setTempFilters({ ...tempFilters, user_id: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 rounded-lg border border-[var(--border-default)] bg-[var(--bg-base)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)] transition-all"
               >
                 <option value="">All Users</option>
                 {availableUsers.map(user => (
@@ -13991,11 +14051,13 @@ const AuditLogs: React.FC = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Action</label>
+              <label className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider mb-1">
+                Action
+              </label>
               <select
                 value={tempFilters.action}
                 onChange={(e) => setTempFilters({ ...tempFilters, action: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 rounded-lg border border-[var(--border-default)] bg-[var(--bg-base)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)] transition-all"
               >
                 <option value="">All Actions</option>
                 {actionTypes.map(action => (
@@ -14004,11 +14066,13 @@ const AuditLogs: React.FC = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Entity Type</label>
+              <label className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider mb-1">
+                Entity Type
+              </label>
               <select
                 value={tempFilters.entity_type}
                 onChange={(e) => setTempFilters({ ...tempFilters, entity_type: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 rounded-lg border border-[var(--border-default)] bg-[var(--bg-base)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)] transition-all"
               >
                 <option value="">All Entities</option>
                 {entityTypes.map(type => (
@@ -14017,34 +14081,38 @@ const AuditLogs: React.FC = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Date From</label>
+              <label className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider mb-1">
+                Date From
+              </label>
               <input
                 type="date"
                 value={tempFilters.date_from}
                 onChange={(e) => setTempFilters({ ...tempFilters, date_from: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 rounded-lg border border-[var(--border-default)] bg-[var(--bg-base)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)] transition-all"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Date To</label>
+              <label className="block text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider mb-1">
+                Date To
+              </label>
               <input
                 type="date"
                 value={tempFilters.date_to}
                 onChange={(e) => setTempFilters({ ...tempFilters, date_to: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 rounded-lg border border-[var(--border-default)] bg-[var(--bg-base)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)] transition-all"
               />
             </div>
           </div>
-          <div className="flex justify-end gap-3 mt-4">
+          <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-[var(--border-default)]">
             <button
               onClick={handleClearFilters}
-              className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              className="px-4 py-2 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] transition-colors"
             >
               Clear All
             </button>
             <button
               onClick={handleApplyFilters}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-4 py-2 rounded-lg bg-[var(--accent)] text-white hover:bg-[var(--accent-hover)] transition-all duration-200 shadow-sm"
             >
               Apply Filters
             </button>
@@ -14053,102 +14121,110 @@ const AuditLogs: React.FC = () => {
       )}
 
       {/* Stats Bar */}
-      <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-[var(--bg-base)] rounded-xl border border-[var(--border-default)] p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Total Activities</p>
-              <p className="text-2xl font-bold text-gray-900">{pagination.total.toLocaleString()}</p>
+              <p className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Total Activities</p>
+              <p className="text-2xl font-bold text-[var(--text-primary)] mt-1">{pagination.total.toLocaleString()}</p>
             </div>
-            <Activity className="w-8 h-8 text-gray-400" />
+            <div className="p-3 rounded-lg bg-[var(--bg-subtle)]">
+              <Activity className="w-6 h-6 text-[var(--text-tertiary)]" />
+            </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="bg-[var(--bg-base)] rounded-xl border border-[var(--border-default)] p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Current Page</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Current Page</p>
+              <p className="text-2xl font-bold text-[var(--text-primary)] mt-1">
                 {pagination.page} / {pagination.pages || 1}
               </p>
             </div>
-            <Eye className="w-8 h-8 text-gray-400" />
+            <div className="p-3 rounded-lg bg-[var(--bg-subtle)]">
+              <Eye className="w-6 h-6 text-[var(--text-tertiary)]" />
+            </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="bg-[var(--bg-base)] rounded-xl border border-[var(--border-default)] p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Items Per Page</p>
+              <p className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Items Per Page</p>
               <select
                 value={filters.limit}
                 onChange={(e) => setFilters({ ...filters, limit: parseInt(e.target.value), page: 1 })}
-                className="mt-1 text-lg font-semibold text-gray-900 border border-gray-300 rounded-md px-2 py-1"
+                className="mt-1 text-lg font-semibold text-[var(--text-primary)] bg-transparent border border-[var(--border-default)] rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[var(--border-focus)]"
               >
                 <option value={20}>20</option>
                 <option value={50}>50</option>
                 <option value={100}>100</option>
               </select>
             </div>
-            <Database className="w-8 h-8 text-gray-400" />
+            <div className="p-3 rounded-lg bg-[var(--bg-subtle)]">
+              <Database className="w-6 h-6 text-[var(--text-tertiary)]" />
+            </div>
           </div>
         </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="bg-[var(--bg-base)] rounded-xl border border-[var(--border-default)] p-5">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Unique Users</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">Unique Users</p>
+              <p className="text-2xl font-bold text-[var(--text-primary)] mt-1">
                 {new Set(logs.map(l => l.user_id)).size}
               </p>
             </div>
-            <UsersIcon className="w-8 h-8 text-gray-400" />
+            <div className="p-3 rounded-lg bg-[var(--bg-subtle)]">
+              <UsersIcon className="w-6 h-6 text-[var(--text-tertiary)]" />
+            </div>
           </div>
         </div>
       </div>
 
       {/* Audit Logs Table */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <div className="bg-[var(--bg-base)] rounded-xl border border-[var(--border-default)] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-[var(--bg-subtle)] border-b border-[var(--border-default)]">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
                   Timestamp
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
                   User
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
                   Action
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
                   Entity
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
                   Summary
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
                   IP Address
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-right text-xs font-medium text-[var(--text-secondary)] uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-[var(--border-default)]">
               {loading ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-12 text-center">
                     <div className="flex justify-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent)]"></div>
                     </div>
-                    <p className="mt-2 text-gray-500">Loading audit logs...</p>
+                    <p className="mt-2 text-[var(--text-secondary)]">Loading audit logs...</p>
                   </td>
                 </tr>
               ) : logs.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-12 text-center">
-                    <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                    <p className="text-gray-500">No audit logs found</p>
-                    <p className="text-sm text-gray-400 mt-1">Try adjusting your filters</p>
+                    <AlertCircle className="w-12 h-12 text-[var(--text-tertiary)] mx-auto mb-3" />
+                    <p className="text-[var(--text-primary)] font-medium">No audit logs found</p>
+                    <p className="text-sm text-[var(--text-tertiary)] mt-1">Try adjusting your filters</p>
                   </td>
                 </tr>
               ) : (
@@ -14159,28 +14235,28 @@ const AuditLogs: React.FC = () => {
                   const EntityIcon = getEntityIconComponent(log.entity_type);
                   
                   return (
-                    <tr key={log.id} className="hover:bg-gray-50 transition-colors">
+                    <tr key={log.id} className="hover:bg-[var(--bg-subtle)] transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-2">
-                          <Clock className="w-4 h-4 text-gray-400" />
-                          <span className="text-sm text-gray-900" title={formatDate(log.created_at)}>
+                          <Clock className="w-4 h-4 text-[var(--text-tertiary)]" />
+                          <span className="text-sm text-[var(--text-primary)]" title={formatDate(log.created_at)}>
                             {getRelativeTime(log.created_at)}
                           </span>
                         </div>
-                        <div className="text-xs text-gray-500 mt-1">
+                        <div className="text-xs text-[var(--text-tertiary)] mt-1">
                           {new Date(log.created_at).toLocaleTimeString()}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-sm font-medium">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[var(--accent)] to-[var(--accent-hover)] flex items-center justify-center text-white text-sm font-medium shadow-sm">
                             {log.user?.first_name?.[0]}{log.user?.last_name?.[0]}
                           </div>
                           <div>
-                            <div className="text-sm font-medium text-gray-900">
+                            <div className="text-sm font-medium text-[var(--text-primary)]">
                               {log.user ? `${log.user.first_name} ${log.user.last_name}` : `User ${log.user_id}`}
                             </div>
-                            <div className="text-xs text-gray-500">
+                            <div className="text-xs text-[var(--text-tertiary)]">
                               {log.user?.email}
                             </div>
                           </div>
@@ -14197,33 +14273,33 @@ const AuditLogs: React.FC = () => {
                           <div className={`p-1.5 rounded-lg ${getEntityBgColorClass(log.entity_type)}`}>
                             <EntityIcon className={`w-4 h-4 ${getEntityColorClass(log.entity_type)}`} />
                           </div>
-                          <span className="text-sm text-gray-900">
+                          <span className="text-sm text-[var(--text-primary)]">
                             {getEntityDisplayName(log.entity_type)}
                           </span>
                           {log.entity_id && (
-                            <span className="text-xs text-gray-400">#{log.entity_id}</span>
+                            <span className="text-xs text-[var(--text-tertiary)]">#{log.entity_id}</span>
                           )}
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="text-sm text-gray-900 max-w-md truncate" title={summary}>
+                        <div className="text-sm text-[var(--text-primary)] max-w-md truncate" title={summary}>
                           {summary}
                         </div>
                         {details?.changes && details.changes.length > 0 && (
-                          <div className="text-xs text-gray-500 mt-1">
+                          <div className="text-xs text-[var(--text-tertiary)] mt-1">
                             {details.changes.length} field{details.changes.length > 1 ? 's' : ''} changed
                           </div>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <code className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded">
+                        <code className="text-xs bg-[var(--bg-subtle)] text-[var(--text-secondary)] px-2 py-1 rounded font-mono">
                           {log.ip_address || '—'}
                         </code>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right">
                         <button
                           onClick={() => handleViewDetails(log)}
-                          className="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center gap-1 ml-auto"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-[var(--accent)] hover:bg-[var(--accent-subtle)] transition-all duration-200"
                         >
                           <Eye className="w-4 h-4" />
                           Details
@@ -14239,8 +14315,8 @@ const AuditLogs: React.FC = () => {
 
         {/* Pagination */}
         {!loading && logs.length > 0 && (
-          <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-            <div className="text-sm text-gray-500">
+          <div className="px-6 py-4 border-t border-[var(--border-default)] flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-sm text-[var(--text-secondary)]">
               Showing {((pagination.page - 1) * pagination.limit) + 1} to{' '}
               {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} results
             </div>
@@ -14248,7 +14324,7 @@ const AuditLogs: React.FC = () => {
               <button
                 onClick={() => handlePageChange(pagination.page - 1)}
                 disabled={pagination.page === 1}
-                className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                className="p-2 rounded-lg border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -14268,11 +14344,12 @@ const AuditLogs: React.FC = () => {
                     <button
                       key={pageNum}
                       onClick={() => handlePageChange(pageNum)}
-                      className={`px-3 py-1 rounded-md text-sm ${
+                      className={cn(
+                        "min-w-[2rem] h-8 px-2 rounded-lg text-sm transition-all",
                         pagination.page === pageNum
-                          ? 'bg-blue-600 text-white'
-                          : 'border border-gray-300 hover:bg-gray-50'
-                      }`}
+                          ? "bg-[var(--accent)] text-white shadow-sm"
+                          : "border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)]"
+                      )}
                     >
                       {pageNum}
                     </button>
@@ -14282,7 +14359,7 @@ const AuditLogs: React.FC = () => {
               <button
                 onClick={() => handlePageChange(pagination.page + 1)}
                 disabled={pagination.page === pagination.pages}
-                className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                className="p-2 rounded-lg border border-[var(--border-default)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-subtle)] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -27904,12 +27981,12 @@ FILE: src\utils\auditHelpers.ts
 ================================================================================
 
 import type { AuditDetails, AuditChange } from '../types/admin';
-import { 
-  Plus, 
-  PenSquare, 
-  Trash2, 
-  Eye, 
-  LogIn, 
+import {
+  Plus,
+  PenSquare,
+  Trash2,
+  Eye,
+  LogIn,
   LogOut,
   Download,
   Upload,
@@ -27930,7 +28007,7 @@ import {
  */
 export function parseAuditDetails(details: string): AuditDetails | null {
   if (!details) return null;
-  
+
   try {
     const parsed = JSON.parse(details);
     return parsed;
@@ -27988,8 +28065,8 @@ export function getActionColorClass(action: string): string {
     UPDATE: 'bg-blue-100 text-blue-800',
     DELETE: 'bg-red-100 text-red-800',
     VIEW: 'bg-gray-100 text-gray-800',
-    LOGIN: 'bg-purple-100 text-purple-800',
-    LOGOUT: 'bg-orange-100 text-orange-800',
+    LOGIN: 'bg-purple-100 text-purple-800 dark:bg-purple-900/60 dark:text-purple-200',
+    LOGOUT: 'bg-orange-100 text-orange-800 dark:bg-orange-900/60 dark:text-orange-200',
     EXPORT: 'bg-teal-100 text-teal-800',
     IMPORT: 'bg-cyan-100 text-cyan-800',
     IMPERSONATE: 'bg-pink-100 text-pink-800',
@@ -28079,16 +28156,16 @@ export function getEntityDisplayName(entityType: string): string {
  */
 export function formatChangesSummary(changes: AuditChange[]): string {
   if (!changes || changes.length === 0) return '';
-  
+
   if (changes.length === 1) {
     const c = changes[0];
     return `${c.display_name}: "${formatValue(c.old_value)}" → "${formatValue(c.new_value)}"`;
   }
-  
+
   if (changes.length <= 3) {
     return changes.map(c => c.display_name).join(', ');
   }
-  
+
   return `${changes.length} fields changed`;
 }
 

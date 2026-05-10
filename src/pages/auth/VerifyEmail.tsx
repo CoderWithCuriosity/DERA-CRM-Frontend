@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { authApi } from '../../api/auth';
+import { useAuth } from '../../hooks/useAuth'; // Add this import
 import { CheckCircle, XCircle, Loader } from 'lucide-react';
 
 export default function VerifyEmail() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { refreshUser } = useAuth();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('');
 
@@ -19,17 +21,21 @@ export default function VerifyEmail() {
     }
 
     authApi.verifyEmail(token)
-      .then(() => {
+      .then(async () => {
+        // CRITICAL: Refresh user data to update is_verified status
+        await refreshUser();
+        
         setStatus('success');
-        setMessage('Email verified successfully! You can now login.');
-        // Redirect to login after 3 seconds
-        setTimeout(() => navigate('/'), 3000);
+        setMessage('Email verified successfully! You can now access the dashboard.');
+        
+        // Redirect to dashboard after 2 seconds
+        setTimeout(() => navigate('/'), 2000);
       })
       .catch((error) => {
         setStatus('error');
         setMessage(error.response?.data?.message || 'Email verification failed');
       });
-  }, [searchParams, navigate]);
+  }, [searchParams, navigate, refreshUser]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -47,7 +53,7 @@ export default function VerifyEmail() {
               <CheckCircle className="mx-auto h-12 w-12 text-green-500" />
               <h2 className="mt-4 text-xl font-semibold text-green-700">Success!</h2>
               <p className="mt-2 text-gray-600">{message}</p>
-              <p className="mt-4 text-sm text-gray-500">Redirecting to login...</p>
+              <p className="mt-4 text-sm text-gray-500">Redirecting to dashboard...</p>
             </>
           )}
           

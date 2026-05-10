@@ -1,7 +1,8 @@
-// store/useAuth.ts
+// src/hooks/useAuth.ts
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { authApi } from '../api/auth';
+import { usersApi } from '../api/users';
 import type { User, LoginCredentials, RegisterData } from '../types/auth';
 import toast from 'react-hot-toast';
 
@@ -12,9 +13,10 @@ interface ImpersonatedBy {
   email: string;
 }
 
+// Fix: Use undefined instead of null to match the type
 interface ExtendedUser extends User {
   isImpersonating?: boolean;
-  impersonatedBy?: ImpersonatedBy;
+  impersonatedBy?: ImpersonatedBy; // Changed from ImpersonatedBy | null to optional
 }
 
 interface AuthState {
@@ -27,8 +29,9 @@ interface AuthState {
   register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
   setUser: (user: ExtendedUser | null) => void;
+  refreshUser: () => Promise<void>;
   startImpersonating: (user: ExtendedUser, token: string, impersonatedBy: ImpersonatedBy) => void;
-  stopImpersonating: () => Promise<void>; // Keep as Promise<void>
+  stopImpersonating: () => Promise<void>;
 }
 
 export const useAuth = create<AuthState>()(
@@ -120,24 +123,63 @@ export const useAuth = create<AuthState>()(
         impersonatedBy: user?.impersonatedBy || null
       }),
 
-      // New method to start impersonation
+      // Fixed refreshUser method - properly handles undefined vs null
+      refreshUser: async () => {
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+          console.warn('No token found, cannot refresh user');
+          return;
+        }
+
+        try {
+          const response = await usersApi.getProfile();
+          if (response?.data) {
+            const refreshedUser = response.data;
+            // Fix avatar URL if needed
+            if (refreshedUser.avatar) {
+              refreshedUser.avatar = import.meta.env.VITE_API_URL.replace(/\/api$/, '') + refreshedUser.avatar;
+            }
+            
+            // Preserve impersonation flags if they exist
+            const currentUser = get().user;
+            
+            // Create updated user with proper typing
+            const updatedUser: ExtendedUser = {
+              ...refreshedUser,
+              // Convert undefined to optional property by conditionally adding
+              ...(currentUser?.isImpersonating && { isImpersonating: currentUser.isImpersonating }),
+              ...(currentUser?.impersonatedBy && { impersonatedBy: currentUser.impersonatedBy })
+            };
+            
+            set({ 
+              user: updatedUser, 
+              isAuthenticated: true 
+            });
+            
+            console.log('User data refreshed successfully');
+          }
+        } catch (error) {
+          console.error('Failed to refresh user data:', error);
+          // If refresh fails with 401, token might be invalid
+          if (error instanceof Error && (error as any).response?.status === 401) {
+            console.warn('Auth token may be expired');
+          }
+        }
+      },
+
       startImpersonating: (user, token, impersonatedBy) => {
-        // Update avatar URL if needed
         if (user.avatar) {
           user.avatar = import.meta.env.VITE_API_URL.replace(/\/api$/, '') + user.avatar;
         }
         
-        // Add impersonation metadata to user
-        const userWithImpersonation = {
+        const userWithImpersonation: ExtendedUser = {
           ...user,
           isImpersonating: true,
           impersonatedBy
         };
         
-        // Store the new token
         localStorage.setItem('accessToken', token);
         
-        // Update state
         set({
           user: userWithImpersonation,
           isAuthenticated: true,
@@ -148,7 +190,6 @@ export const useAuth = create<AuthState>()(
         toast.success(`Now impersonating ${user.first_name} ${user.last_name}`);
       },
 
-      // Fixed: stopImpersonating now returns Promise<void>
       stopImpersonating: async () => {
         const { user } = get();
         
@@ -160,20 +201,16 @@ export const useAuth = create<AuthState>()(
         set({ isLoading: true });
         
         try {
-          // Import dynamically to avoid circular dependency
           const { usersApi } = await import('../api/users');
           const response = await usersApi.stopImpersonating();
           const { token, user: adminUser } = response.data;
           
-          // Fix avatar URL
           if (adminUser.avatar) {
             adminUser.avatar = import.meta.env.VITE_API_URL.replace(/\/api$/, '') + adminUser.avatar;
           }
           
-          // Update token
           localStorage.setItem('accessToken', token);
           
-          // Reset state
           set({
             user: adminUser,
             isAuthenticated: true,
@@ -182,8 +219,6 @@ export const useAuth = create<AuthState>()(
           });
           
           toast.success('Stopped impersonating. Returned to admin account.');
-          
-          // Don't return anything - just resolve the promise
           return;
         } catch (error: any) {
           console.error('Failed to stop impersonating:', error);
