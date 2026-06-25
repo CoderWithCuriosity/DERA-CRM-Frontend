@@ -49,7 +49,7 @@
   --bg-overlay:  rgba(0, 0, 0, 0.45);
 
   /* Borders */
-  --border-default: rgba(0, 0, 0, 0.08);
+  --border-default: rgba(0, 0, 0, 0.2);
   --border-strong:  rgba(0, 0, 0, 0.14);
   --border-focus:   #3B82F6;
 

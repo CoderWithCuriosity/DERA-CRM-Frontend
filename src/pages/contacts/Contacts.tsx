@@ -385,6 +385,7 @@ export function Contacts() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               leftIcon={<Search size={18} />}
+              className='pl-8'
             />
           </div>
           <div className="flex items-center space-x-3">

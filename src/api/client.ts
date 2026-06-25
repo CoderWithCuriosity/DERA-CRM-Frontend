@@ -62,45 +62,36 @@ class ApiClient {
       (response) => response,
       async (error: AxiosError<ApiErrorResponse>) => {
         const originalRequest = error.config as CustomAxiosRequestConfig;
-        
-        // If there's no config, reject
+
         if (!originalRequest) {
           return Promise.reject(error);
         }
 
-        // CRITICAL: Don't try to refresh if this IS the refresh request
-        // This prevents infinite loops when refresh token is also invalid
+        // Don't try to refresh if this IS the refresh request
         if (originalRequest.url?.includes('/auth/refresh-token')) {
-          // Clear everything and redirect to login
-          this.clearAuthData();
-          if (window.location.pathname !== '/login') {
-            window.location.href = '/login';
-            toast.error('Session expired. Please login again.');
-          }
+          this.clearAuthData(); // This now dispatches the event
+          // Remove the window.location.href redirect here since event handles it
           return Promise.reject(error);
         }
 
-        // Handle 401 errors (unauthorized)
+        // Handle 401 errors
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
 
           try {
             const newToken = await this.refreshAccessToken();
-            
+
             if (newToken && originalRequest.headers) {
-              // Update the authorization header
               originalRequest.headers.Authorization = `Bearer ${newToken}`;
-              
-              // Retry the original request
               return this.client(originalRequest);
             }
           } catch (refreshError) {
-            // Refresh failed - already handled in refreshAccessToken
+            // Refresh failed - clear auth and let the event handle it
+            this.clearAuthData();
             return Promise.reject(refreshError);
           }
         }
 
-        // Handle all other errors (4xx, 5xx, network errors)
         this.handleError(error);
         return Promise.reject(error);
       }
@@ -119,7 +110,7 @@ class ApiClient {
     }
 
     const refreshToken = localStorage.getItem('refreshToken');
-    
+
     // No refresh token? Force logout
     if (!refreshToken) {
       this.handleAuthError();
@@ -130,9 +121,9 @@ class ApiClient {
 
     this.refreshPromise = this.client
       .post<{ data: { token: string; refreshToken: string } }>(
-        '/auth/refresh-token', 
+        '/auth/refresh-token',
         { refresh_token: refreshToken },
-        { 
+        {
           // Mark this as a refresh request so we can detect it in the interceptor
           headers: {
             'X-Refresh-Token': 'true' // Additional way to identify refresh requests
@@ -141,11 +132,11 @@ class ApiClient {
       )
       .then((response) => {
         const { token, refreshToken: newRefreshToken } = response.data.data;
-        
+
         // Store new tokens
         localStorage.setItem('accessToken', token);
         localStorage.setItem('refreshToken', newRefreshToken);
-        
+
         return token;
       })
       .catch((error) => {
@@ -166,24 +157,25 @@ class ApiClient {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
+
+    // Dispatch session expired event
+    window.dispatchEvent(new CustomEvent('session-expired'));
   }
 
   private handleAuthError(): void {
     this.clearAuthData();
-    
+
     // Only redirect if not already on login page
-    // Use setTimeout to prevent race conditions with multiple requests
     if (window.location.pathname !== '/login') {
       setTimeout(() => {
         window.location.href = '/login';
       }, 100);
-      
+
       // Show toast only once
       if (!(window as any).__toastShown__) {
         (window as any).__toastShown__ = true;
         toast.error('Session expired. Please login again.');
-        
-        // Reset the flag after some time
+
         setTimeout(() => {
           (window as any).__toastShown__ = false;
         }, 5000);
@@ -212,26 +204,26 @@ class ApiClient {
             toast.error(data.message || 'Validation error');
           }
           break;
-          
+
         case 403:
           toast.error('You do not have permission to perform this action');
           break;
-          
+
         case 404:
           toast.error('Resource not found');
           break;
-          
+
         case 429:
           toast.error('Too many requests. Please try again later.');
           break;
-          
+
         case 500:
         case 501:
         case 502:
         case 503:
           toast.error('Server error. Please try again later.');
           break;
-          
+
         default:
           if (status >= 400 && status < 500) {
             toast.error(data?.message || 'Request failed');

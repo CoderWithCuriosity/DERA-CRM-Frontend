@@ -44,9 +44,34 @@ import { CreateContact } from './pages/contacts/CreateContact';
 import VerifyEmailSent from './pages/auth/VerifyEmailSent';
 import { TemplateForm } from './pages/campaigns/TemplateForm';
 import TemplateDetail from './pages/campaigns/TemplateDetail';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
+
+
 
 function AppContent() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+
+
+  // Add this useEffect for session expiry handling
+  useEffect(() => {
+    const handleSessionExpired = () => {
+      // Clear auth state
+      logout();
+      // Navigate to login
+      navigate('/login', { replace: true });
+      toast.error('Session expired. Please login again.');
+    };
+
+    // Listen for custom event
+    window.addEventListener('session-expired', handleSessionExpired);
+
+    return () => {
+      window.removeEventListener('session-expired', handleSessionExpired);
+    };
+  }, [logout, navigate]);
 
   return (
     <BrowserRouter>

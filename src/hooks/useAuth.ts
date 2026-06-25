@@ -50,12 +50,12 @@ export const useAuth = create<AuthState>()(
           const { user, token, refreshToken } = response.data;
 
           user.avatar = import.meta.env.VITE_API_URL.replace(/\/api$/, '') + user.avatar;
-          
+
           localStorage.setItem('accessToken', token);
           localStorage.setItem('refreshToken', refreshToken);
-          
-          set({ 
-            user, 
+
+          set({
+            user,
             isAuthenticated: true,
             isImpersonating: false,
             impersonatedBy: null
@@ -76,12 +76,12 @@ export const useAuth = create<AuthState>()(
           const { user, token, refreshToken } = response.data;
 
           user.avatar = import.meta.env.VITE_API_URL.replace(/\/api$/, '') + user.avatar;
-        
+
           localStorage.setItem('accessToken', token);
           localStorage.setItem('refreshToken', refreshToken);
-          
-          set({ 
-            user, 
+
+          set({
+            user,
             isAuthenticated: true,
             isImpersonating: false,
             impersonatedBy: null
@@ -104,11 +104,11 @@ export const useAuth = create<AuthState>()(
             console.error('Logout error:', error);
           }
         }
-        
+
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
-        set({ 
-          user: null, 
+        set({
+          user: null,
           isAuthenticated: false,
           isImpersonating: false,
           impersonatedBy: null
@@ -116,18 +116,32 @@ export const useAuth = create<AuthState>()(
         toast.success('Logged out successfully');
       },
 
-      setUser: (user) => set({ 
-        user, 
+      setUser: (user) => set({
+        user,
         isAuthenticated: !!user,
         isImpersonating: user?.isImpersonating || false,
         impersonatedBy: user?.impersonatedBy || null
       }),
 
       // Fixed refreshUser method - properly handles undefined vs null
+      // src/hooks/useAuth.ts - Replace the refreshUser method
+
       refreshUser: async () => {
         const token = localStorage.getItem('accessToken');
         if (!token) {
           console.warn('No token found, cannot refresh user');
+          // Clear auth state
+          set({
+            user: null,
+            isAuthenticated: false,
+            isImpersonating: false,
+            impersonatedBy: null
+          });
+          // Redirect to login
+          if (window.location.pathname !== '/login') {
+            window.location.href = '/login';
+            toast.error('Session expired. Please login again.');
+          }
           return;
         }
 
@@ -139,10 +153,10 @@ export const useAuth = create<AuthState>()(
             if (refreshedUser.avatar) {
               refreshedUser.avatar = import.meta.env.VITE_API_URL.replace(/\/api$/, '') + refreshedUser.avatar;
             }
-            
+
             // Preserve impersonation flags if they exist
             const currentUser = get().user;
-            
+
             // Create updated user with proper typing
             const updatedUser: ExtendedUser = {
               ...refreshedUser,
@@ -150,20 +164,36 @@ export const useAuth = create<AuthState>()(
               ...(currentUser?.isImpersonating && { isImpersonating: currentUser.isImpersonating }),
               ...(currentUser?.impersonatedBy && { impersonatedBy: currentUser.impersonatedBy })
             };
-            
-            set({ 
-              user: updatedUser, 
-              isAuthenticated: true 
+
+            set({
+              user: updatedUser,
+              isAuthenticated: true
             });
-            
-            console.log('User data refreshed successfully');
+
           }
-        } catch (error) {
+        } catch (error: any) {
           console.error('Failed to refresh user data:', error);
-          // If refresh fails with 401, token might be invalid
-          if (error instanceof Error && (error as any).response?.status === 401) {
-            console.warn('Auth token may be expired');
+
+          // Check if it's a 401 error (token expired/invalid) or any error
+          const status = error?.response?.status;
+          if (status === 401 || status === 403 || !status) {
+            console.warn('Auth token invalid or expired, redirecting to login');
+            // Clear auth data
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
+            set({
+              user: null,
+              isAuthenticated: false,
+              isImpersonating: false,
+              impersonatedBy: null
+            });
+            // Redirect to login
+            if (window.location.pathname !== '/login') {
+              window.location.href = '/login';
+              toast.error('Session expired. Please login again.');
+            }
           }
+          throw error; // Re-throw for the caller to handle
         }
       },
 
@@ -171,53 +201,53 @@ export const useAuth = create<AuthState>()(
         if (user.avatar) {
           user.avatar = import.meta.env.VITE_API_URL.replace(/\/api$/, '') + user.avatar;
         }
-        
+
         const userWithImpersonation: ExtendedUser = {
           ...user,
           isImpersonating: true,
           impersonatedBy
         };
-        
+
         localStorage.setItem('accessToken', token);
-        
+
         set({
           user: userWithImpersonation,
           isAuthenticated: true,
           isImpersonating: true,
           impersonatedBy
         });
-        
+
         toast.success(`Now impersonating ${user.first_name} ${user.last_name}`);
       },
 
       stopImpersonating: async () => {
         const { user } = get();
-        
+
         if (!user?.isImpersonating) {
           toast.error('Not currently impersonating');
           return;
         }
 
         set({ isLoading: true });
-        
+
         try {
           const { usersApi } = await import('../api/users');
           const response = await usersApi.stopImpersonating();
           const { token, user: adminUser } = response.data;
-          
+
           if (adminUser.avatar) {
             adminUser.avatar = import.meta.env.VITE_API_URL.replace(/\/api$/, '') + adminUser.avatar;
           }
-          
+
           localStorage.setItem('accessToken', token);
-          
+
           set({
             user: adminUser,
             isAuthenticated: true,
             isImpersonating: false,
             impersonatedBy: null
           });
-          
+
           toast.success('Stopped impersonating. Returned to admin account.');
           return;
         } catch (error: any) {
@@ -231,8 +261,8 @@ export const useAuth = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
-      partialize: (state) => ({ 
-        user: state.user, 
+      partialize: (state) => ({
+        user: state.user,
         isAuthenticated: state.isAuthenticated,
         isImpersonating: state.isImpersonating,
         impersonatedBy: state.impersonatedBy
