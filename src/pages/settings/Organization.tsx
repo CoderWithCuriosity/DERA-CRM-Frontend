@@ -159,9 +159,35 @@ export default function Organization() {
               className="px-3 py-2 bg-white/70 border border-blue-100 rounded-xl"
               {...register('currency')}
             >
-              <option value="USD">USD</option>
-              <option value="EUR">EUR</option>
-              <option value="GBP">GBP</option>
+              <optgroup label="Major Currencies">
+                <option value="NGN">NGN - Nigerian Naira</option>
+                <option value="USD">USD - US Dollar</option>
+                <option value="EUR">EUR - Euro</option>
+                <option value="GBP">GBP - British Pound</option>
+                <option value="JPY">JPY - Japanese Yen</option>
+                <option value="CNY">CNY - Chinese Yuan</option>
+              </optgroup>
+
+              <optgroup label="African Currencies">
+                <option value="ZAR">ZAR - South African Rand</option>
+                <option value="NGN">NGN - Nigerian Naira</option>
+                <option value="KES">KES - Kenyan Shilling</option>
+                <option value="EGP">EGP - Egyptian Pound</option>
+                <option value="GHS">GHS - Ghanaian Cedi</option>
+                <option value="MAD">MAD - Moroccan Dirham</option>
+                <option value="TND">TND - Tunisian Dinar</option>
+                <option value="UGX">UGX - Ugandan Shilling</option>
+                <option value="TZS">TZS - Tanzanian Shilling</option>
+                <option value="RWF">RWF - Rwandan Franc</option>
+              </optgroup>
+
+              <optgroup label="Other Popular Currencies">
+                <option value="AUD">AUD - Australian Dollar</option>
+                <option value="CAD">CAD - Canadian Dollar</option>
+                <option value="CHF">CHF - Swiss Franc</option>
+                <option value="INR">INR - Indian Rupee</option>
+                <option value="BRL">BRL - Brazilian Real</option>
+              </optgroup>
             </select>
           </div>
           <div className="flex justify-end">

@@ -48,12 +48,10 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
-
-
-function AppContent() {
+// Create a separate component for the routes that uses useNavigate
+function AppRoutes() {
   const { isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
-
 
   // Add this useEffect for session expiry handling
   useEffect(() => {
@@ -74,130 +72,131 @@ function AppContent() {
   }, [logout, navigate]);
 
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/login" element={
-          isAuthenticated ? <Navigate to="/" /> : <Login />
-        } />
-        <Route path="/register" element={
-          isAuthenticated ? <Navigate to="/" /> : <Register />
-        } />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/verify-email-sent" element={<VerifyEmailSent />} />
-        <Route path="/verify-email" element={<VerifyEmail />} />
-        <Route path="/request-verification" element={<RequestVerification />} />
+    <Routes>
+      {/* Public Routes */}
+      <Route path="/login" element={
+        isAuthenticated ? <Navigate to="/" /> : <Login />
+      } />
+      <Route path="/register" element={
+        isAuthenticated ? <Navigate to="/" /> : <Register />
+      } />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/verify-email-sent" element={<VerifyEmailSent />} />
+      <Route path="/verify-email" element={<VerifyEmail />} />
+      <Route path="/request-verification" element={<RequestVerification />} />
 
-        {/* Protected Routes */}
-        <Route path="/" element={
-          <ProtectedRoute>
-            <Layout />
-          </ProtectedRoute>
-        }>
-          <Route index element={<Dashboard />} />
+      {/* Protected Routes */}
+      <Route path="/" element={
+        <ProtectedRoute>
+          <Layout />
+        </ProtectedRoute>
+      }>
+        <Route index element={<Dashboard />} />
 
-          {/* Contacts */}
-          <Route path="contacts">
-            <Route index element={<Contacts />} />
-            <Route path=":id" element={<ContactDetail />} />
-            <Route path="new" element={<CreateContact />} />
-            <Route path=":id/edit" element={<EditContact />} />
-          </Route>
-
-          {/* Messages */}
-          <Route path="messages" element={<Messages />} />
-
-          {/* Notifications */}
-          <Route path="notifications" element={<NotificationsPage />} />
-          
-          {/* Documents */}
-          <Route path="documents" element={<Documents />} />
-
-          {/* Reports */}
-          <Route path="reports" element={<Reports />} />
-
-          {/* Deals */}
-          <Route path="deals">
-            <Route index element={<Deals />} />
-            <Route path=":id" element={<DealDetail />} />
-            <Route path="new" element={<CreateDeal />} />
-            <Route path=":id/edit" element={<EditDeal />} />
-          </Route>
-
-          {/* Tickets */}
-          <Route path="tickets">
-            <Route index element={<Tickets />} />
-            <Route path=":id" element={<TicketDetail />} />
-            <Route path="new" element={<CreateTicket />} />
-            <Route path=":id/edit" element={<EditTicket />} />
-          </Route>
-
-          {/* Activities */}
-          <Route path="activities">
-            <Route index element={<Activities />} />
-            <Route path="new" element={<CreateActivity />} />
-            <Route path=":id" element={<ActivityDetail />} />
-            <Route path=":id/edit" element={<CreateActivity />} />
-          </Route>
-
-          {/* Campaigns */}
-          <Route path="campaigns">
-            <Route index element={<Campaigns />} />
-            <Route path="new" element={<CreateCampaign />} />
-            <Route path="templates" element={<EmailTemplates />} />
-            <Route path="templates/new" element={<TemplateForm />} />
-            <Route path="templates/:templateId" element={<TemplateDetail />} />
-            <Route path="templates/:templateId/edit" element={<EditTemplate />} />
-            <Route path=":id" element={<CampaignDetail />} />
-          </Route>
-
-          {/* Settings */}
-          <Route path="settings/profile" element={<Profile />} />
-
-          <Route path="settings/organization" element={
-            <AdminRoute>
-              <Organization />
-            </AdminRoute>
-          } />
-
-          <Route path="settings/users" element={
-            <AdminRoute>
-              <Users />
-            </AdminRoute>
-          } />
-
-          {/* Admin Routes */}
-          <Route path="admin/audit-logs" element={
-            <AdminRoute>
-              <AuditLogs />
-            </AdminRoute>
-          } />
-
-          <Route path="admin/system-health" element={
-            <AdminRoute>
-              <SystemHealth />
-            </AdminRoute>
-          } />
-
-          <Route path="admin/backups" element={
-            <AdminRoute>
-              <Backups />
-            </AdminRoute>
-          } />
+        {/* Contacts */}
+        <Route path="contacts">
+          <Route index element={<Contacts />} />
+          <Route path=":id" element={<ContactDetail />} />
+          <Route path="new" element={<CreateContact />} />
+          <Route path=":id/edit" element={<EditContact />} />
         </Route>
 
-        {/* 404 */}
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
-    </BrowserRouter>
+        {/* Messages */}
+        <Route path="messages" element={<Messages />} />
+
+        {/* Notifications */}
+        <Route path="notifications" element={<NotificationsPage />} />
+        
+        {/* Documents */}
+        <Route path="documents" element={<Documents />} />
+
+        {/* Reports */}
+        <Route path="reports" element={<Reports />} />
+
+        {/* Deals */}
+        <Route path="deals">
+          <Route index element={<Deals />} />
+          <Route path=":id" element={<DealDetail />} />
+          <Route path="new" element={<CreateDeal />} />
+          <Route path=":id/edit" element={<EditDeal />} />
+        </Route>
+
+        {/* Tickets */}
+        <Route path="tickets">
+          <Route index element={<Tickets />} />
+          <Route path=":id" element={<TicketDetail />} />
+          <Route path="new" element={<CreateTicket />} />
+          <Route path=":id/edit" element={<EditTicket />} />
+        </Route>
+
+        {/* Activities */}
+        <Route path="activities">
+          <Route index element={<Activities />} />
+          <Route path="new" element={<CreateActivity />} />
+          <Route path=":id" element={<ActivityDetail />} />
+          <Route path=":id/edit" element={<CreateActivity />} />
+        </Route>
+
+        {/* Campaigns */}
+        <Route path="campaigns">
+          <Route index element={<Campaigns />} />
+          <Route path="new" element={<CreateCampaign />} />
+          <Route path="templates" element={<EmailTemplates />} />
+          <Route path="templates/new" element={<TemplateForm />} />
+          <Route path="templates/:templateId" element={<TemplateDetail />} />
+          <Route path="templates/:templateId/edit" element={<EditTemplate />} />
+          <Route path=":id" element={<CampaignDetail />} />
+        </Route>
+
+        {/* Settings */}
+        <Route path="settings/profile" element={<Profile />} />
+
+        <Route path="settings/organization" element={
+          <AdminRoute>
+            <Organization />
+          </AdminRoute>
+        } />
+
+        <Route path="settings/users" element={
+          <AdminRoute>
+            <Users />
+          </AdminRoute>
+        } />
+
+        {/* Admin Routes */}
+        <Route path="admin/audit-logs" element={
+          <AdminRoute>
+            <AuditLogs />
+          </AdminRoute>
+        } />
+
+        <Route path="admin/system-health" element={
+          <AdminRoute>
+            <SystemHealth />
+          </AdminRoute>
+        } />
+
+        <Route path="admin/backups" element={
+          <AdminRoute>
+            <Backups />
+          </AdminRoute>
+        } />
+      </Route>
+
+      {/* 404 */}
+      <Route path="*" element={<Navigate to="/" />} />
+    </Routes>
   );
 }
 
+// Main App component - BrowserRouter is wrapped here
 function App() {
   return (
     <ThemeWrapper>
-      <AppContent />
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
     </ThemeWrapper>
   );
 }
